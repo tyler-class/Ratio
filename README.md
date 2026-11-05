@@ -113,7 +113,7 @@ npm run dev
 
 ## Support
 
-Ratio is free and built by [Tyler Class](https://tylerclass.net). If you want to say thank you, coffee is my love language: [ko-fi.com/tylerclass](https://ko-fi.com/tylerclass) ☕
+Ratio is free and built by [Tyler Class](https://tylerclass.net). Buy me a coffee to keep it that way: [ko-fi.com/tylerclass](https://ko-fi.com/tylerclass) ☕ Questions or help: [ratio@tylerclass.net](mailto:ratio@tylerclass.net)
 
 ## License
 

@@ -5,11 +5,7 @@ import { useSheets } from './context';
 const LINKS: [string, string, IconName][] = [
   ['https://github.com/tyler-class/ratio', 'Ratio on GitHub', 'github'],
   ['mailto:ratio@tylerclass.net', 'Questions or help? ratio@tylerclass.net', 'mail'],
-  [
-    'https://ko-fi.com/tylerclass',
-    'If you want to say thank you, coffee is my love language',
-    'coffee',
-  ],
+  ['https://ko-fi.com/tylerclass', 'Ratio is free. Buy me a coffee to keep it that way ☕', 'coin'],
   ['https://tylerclass.net', 'tylerclass.net', 'link'],
 ];
 
