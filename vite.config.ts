@@ -46,6 +46,7 @@ export default defineConfig({
           /^\/authorize/,
           /^\/oauth\//,
           /^\/\.well-known\//,
+          /^\/upload\//,
         ],
         runtimeCaching: [
           {

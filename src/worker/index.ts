@@ -7,6 +7,7 @@ import { OAuthProvider } from '@cloudflare/workers-oauth-provider';
 import { app } from './app';
 import { handleAuthorize } from './consent';
 import { mcpApiHandler } from './mcp';
+import { uploadPage } from './uploads';
 
 const defaultHandler = {
   fetch(
@@ -14,7 +15,9 @@ const defaultHandler = {
     env: Cloudflare.Env,
     ctx: ExecutionContext,
   ): Response | Promise<Response> {
-    if (new URL(request.url).pathname === '/authorize') return handleAuthorize(request, env);
+    const path = new URL(request.url).pathname;
+    if (path === '/authorize') return handleAuthorize(request, env);
+    if (path.startsWith('/upload/')) return uploadPage.fetch(request, env, ctx);
     return app.fetch(request, env, ctx);
   },
 };

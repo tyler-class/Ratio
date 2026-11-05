@@ -180,7 +180,8 @@ function ConnectAI() {
       <p style={{ marginTop: 0 }}>
         Let Claude, ChatGPT or any assistant that supports MCP read your log and log, rate and
         update brews, bags and roasters for you. Try “log a V60 of the Kenya, 8 out of 10, a bit
-        sour” or “which origins do I rate highest?”
+        sour”, “which origins do I rate highest?” or “add a photo of the new bag”. For photos the
+        assistant gives you a link to tap and snap.
       </p>
       <label className="lbl">Your connector URL</label>
       <div className="flexrow" style={{ flexWrap: 'nowrap' }}>

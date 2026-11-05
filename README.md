@@ -60,8 +60,10 @@ Assistants get these tools:
 | `add_bean`, `update_bean`       | Add a bag (creating its roaster if new); move it along, mark buy-again, edit details      |
 | `list_roasters`, `save_roaster` | Roasters with bags, ratings and spend; add or edit one                                    |
 | `coffee_insights`               | Ratings by origin/process/roaster/method/grinder/variety, ratio sweet spots, reorder list |
+| `photo_upload_link`             | A one-time link (30 min) to take or pick a photo on your phone for a bag or logo          |
+| `add_photo`                     | Attach an image from a public URL (e.g. a roaster’s logo) or base64 data                  |
 
-Names can be loose (“the kenya”, “sey gachatha”); when a name is ambiguous the assistant is told the options. Times without an offset are read in your time zone, which the app reports automatically.
+Assistants can’t pass a photo from the chat into a tool, so for “add this photo to the Sumatra” they give you an upload link to tap instead; the photo lands on the bag as soon as it uploads. Names can be loose (“the kenya”, “sey gachatha”); when a name is ambiguous the assistant is told the options. Times without an offset are read in your time zone, which the app reports automatically.
 
 ## Change the password
 

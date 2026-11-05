@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest';
 import { ORIGIN, PASSWORD, session } from './helpers';
 
 const REDIRECT = 'https://client.example/callback';
+const PIXEL =
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
 
 async function pkce() {
   const verifier = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(32)))).replace(
@@ -184,6 +186,8 @@ describe('MCP', () => {
         'list_roasters',
         'save_roaster',
         'coffee_insights',
+        'photo_upload_link',
+        'add_photo',
       ]),
     );
 
@@ -294,6 +298,26 @@ describe('MCP', () => {
       min_brews: 1,
     });
     expect(ins.data.reorder_shortlist.map((b) => b.bean)).toContain('Kenya Gachatha AA');
+
+    // Photos: a link to tap on the phone, or an image from data.
+    const link = await tool<{ link: string; for: string }>(t, 'photo_upload_link', {
+      bean: 'gachatha',
+    });
+    expect(link.error).toBeNull();
+    expect(link.data.for).toBe('bag photo for Kenya Gachatha AA');
+    const up = await SELF.fetch(link.data.link.replace(/^https:\/\/[^/]+/, ORIGIN), {
+      method: 'POST',
+      headers: { Origin: ORIGIN, 'Content-Type': 'image/png' },
+      body: Uint8Array.from(atob(PIXEL), (ch) => ch.charCodeAt(0)),
+    });
+    expect(up.status).toBe(201);
+    const logo = await tool<{ added: string; images_now: number }>(t, 'add_photo', {
+      roaster: 'sey',
+      base64: PIXEL,
+    });
+    expect(logo.data).toMatchObject({ added: 'Logo for Sey Coffee', images_now: 1 });
+    const both = await tool(t, 'add_photo', { bean: 'gachatha', roaster: 'sey', base64: PIXEL });
+    expect(both.error).toMatch(/either bean or roaster/);
 
     // Mistakes come back as readable tool errors.
     const unknown = await tool(t, 'get_bean', { bean: 'nonexistent coffee' });

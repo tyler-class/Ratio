@@ -238,6 +238,7 @@ function buildServer(call: Call) {
         'To rate or fix a brew, use update_brew with brew "last" or its number.',
         'Ratings are 0–10 (halves allowed). Temperatures use the owner’s unit shown in coffee_overview.',
         'Times without an offset are the owner’s local time.',
+        'To add a photo the owner has (or will take) on their phone, call photo_upload_link and give them the link; a photo seen in the chat cannot be passed to a tool. add_photo takes a public image URL or real base64 bytes.',
       ].join(' '),
     },
   );
@@ -533,6 +534,7 @@ function buildServer(call: Call) {
             location: r.location,
             website: r.website,
             notes: r.notes,
+            has_logo: r.images.length > 0,
             bags: beans.length,
             beans: beans.map((b) => `${b.name} (${b.status})`),
             avg_rating: ratings.length ? r1(mean(ratings)!) : null,
@@ -891,6 +893,93 @@ function buildServer(call: Call) {
       }
       if (!a.name) throw new ToolError('Give the new roaster a name.');
       return { added: await call<Roaster>('POST', '/roasters', patch) };
+    }),
+  );
+
+  // ---------- photos ----------
+
+  const photoTarget = {
+    bean: z.string().optional().describe('Bean (bag) to attach the photo to'),
+    roaster: z.string().optional().describe('Roaster whose logo this is'),
+  };
+  function resolveTarget(c: Ctx, a: { bean?: string; roaster?: string }) {
+    if (!!a.bean === !!a.roaster) throw new ToolError('Give either bean or roaster.');
+    if (a.bean) {
+      const b = findBean(c, a.bean);
+      return { owner: 'bean' as const, id: b.id, name: b.name, path: `/beans/${b.id}` };
+    }
+    const r = findRoaster(c, a.roaster!);
+    return { owner: 'roaster' as const, id: r.id, name: r.name, path: `/roasters/${r.id}` };
+  }
+
+  server.registerTool(
+    'photo_upload_link',
+    {
+      title: 'Get a photo upload link',
+      description:
+        'Make a one-time link (valid 30 minutes) that opens a page where the owner takes or picks a photo on their phone and it is attached to a bean (bag photo) or a roaster (logo). Use this whenever the owner wants to add a photo they have or are about to take: you cannot pass a photo from the chat into a tool, so give them this link to tap. Roaster logos replace the current logo by default.',
+      inputSchema: z.object({
+        ...photoTarget,
+        replace: z
+          .boolean()
+          .optional()
+          .describe('Replace existing images (default: true for roaster logos, false for bags)'),
+      }),
+    },
+    safe(async (a) => {
+      const c = await load();
+      const t = resolveTarget(c, a);
+      const link = await call<{ url: string; expires_at: string }>('POST', '/upload-links', {
+        owner_type: t.owner,
+        owner_id: t.id,
+        replace: a.replace ?? t.owner === 'roaster',
+      });
+      return {
+        link: link.url,
+        for: `${t.owner === 'bean' ? 'bag photo for' : 'logo for'} ${t.name}`,
+        expires: whenIn(link.expires_at, c.tz),
+        tell_the_owner:
+          'Tap the link, then take or choose a photo. It attaches as soon as it uploads.',
+      };
+    }),
+  );
+
+  server.registerTool(
+    'add_photo',
+    {
+      title: 'Add a photo from a URL or data',
+      description:
+        'Attach an image to a bean (bag photo) or roaster (logo) from a public image URL (for example a roaster’s logo or a product photo on their website), or from base64 image data if you have the actual file bytes. JPEG, PNG, WebP, GIF or AVIF, up to 15 MB. Do not invent base64 for a photo you only saw in the chat — use photo_upload_link for that.',
+      inputSchema: z.object({
+        ...photoTarget,
+        url: z.string().optional().describe('Public http(s) URL of the image'),
+        base64: z.string().optional().describe('Image bytes as base64 or a data: URL'),
+        filename: z.string().optional(),
+        replace: z
+          .boolean()
+          .optional()
+          .describe('Replace existing images (default: true for roaster logos, false for bags)'),
+      }),
+    },
+    safe(async ({ url, base64, filename, replace, ...target }) => {
+      if (!!url === !!base64) throw new ToolError('Give either url or base64.');
+      const c = await load();
+      const t = resolveTarget(c, target);
+      const img = await call<{ id: string; width: number | null; height: number | null }>(
+        'POST',
+        `${t.path}/images/import`,
+        { url, base64, filename, replace: replace ?? t.owner === 'roaster' },
+      );
+      const fresh = await load();
+      const count =
+        t.owner === 'bean'
+          ? fresh.m.beanMap.get(t.id)!.images.length
+          : fresh.state.roasters.find((r) => r.id === t.id)!.images.length;
+      return {
+        added: `${t.owner === 'bean' ? 'Photo' : 'Logo'} for ${t.name}`,
+        size: img.width && img.height ? `${img.width}×${img.height}` : null,
+        images_now: count,
+      };
     }),
   );
 
