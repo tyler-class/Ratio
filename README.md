@@ -53,6 +53,7 @@ Assistants get these tools:
 | Tool                            | What it does                                                                                       |
 | ------------------------------- | -------------------------------------------------------------------------------------------------- |
 | `coffee_overview`               | What’s open, resting, frozen or coming; recent and unrated brews; stats; equipment; units          |
+| `get_started`                   | The log’s current state plus example requests and ready-made prompts                               |
 | `find_beans`, `get_bean`        | Search bags; one bag in full with dial-in table, best and last brew                                |
 | `list_brews`, `get_brew`        | Search the journal by bean, method, dates, rating or notes                                         |
 | `log_brew`                      | Log a brew; anything not given is copied from that bag’s last brew                                 |
@@ -62,6 +63,20 @@ Assistants get these tools:
 | `coffee_insights`               | Ratings by origin/process/roaster/method/grinder/variety, ratio sweet spots, order again shortlist |
 | `photo_upload_link`             | A one-time link (30 min) to take or pick a photo on your phone for a bag or logo                   |
 | `add_photo`                     | Attach an image from a public URL (e.g. a roaster’s logo) or base64 data                           |
+
+Ask “what can you do with Ratio?” and the assistant calls `get_started`, then suggests a few requests that fit your log. The same examples are under **Try asking** in Settings; tap one to copy it.
+
+Ready-made prompts (in Claude, from the **+** menu):
+
+| Prompt          | What it does                                                                 |
+| --------------- | ---------------------------------------------------------------------------- |
+| `dial_in`       | Reads every brew of a bag and suggests the next recipe to try                |
+| `rate_backlog`  | Walks through recent unrated brews one by one and saves your ratings         |
+| `what_to_order` | Suggests coffees from your shortlist and the origins and processes you like  |
+| `finish_bag`    | Sums up a bag, marks it finished with your buy-again call, lines up the next |
+| `weekly_review` | What you brewed, how it rated, what’s ready to open, how long stock lasts    |
+
+Prompts that would change data ask before they do.
 
 Assistants can’t pass a photo from the chat into a tool, so for “add this photo to the Sumatra” they give you an upload link to tap instead; the photo lands on the bag as soon as it uploads. Names can be loose (“the kenya”, “sey gachatha”); when a name is ambiguous the assistant is told the options. Times without an offset are read in your time zone, which the app reports automatically.
 

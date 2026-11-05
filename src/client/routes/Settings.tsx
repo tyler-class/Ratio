@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { EXAMPLE_PROMPTS } from '@shared/examples';
 import { DEFAULT_METHODS } from '@shared/lookups';
 import { api, errorMessage } from '../lib/api';
 import { useActions, useModel } from '../lib/queries';
@@ -192,9 +193,7 @@ function ConnectAI() {
     <Section title="Connect an AI assistant">
       <p style={{ marginTop: 0 }}>
         Let Claude, ChatGPT or any assistant that supports MCP read your log and log, rate and
-        update brews, bags and roasters for you. Try “log a V60 of the Kenya, 8 out of 10, a bit
-        sour”, “which origins do I rate highest?” or “add a photo of the new bag”. For photos the
-        assistant gives you a link to tap and snap.
+        update brews, bags and roasters for you.
       </p>
       <label className="lbl">Your connector URL</label>
       <div className="flexrow" style={{ flexWrap: 'nowrap' }}>
@@ -227,6 +226,23 @@ function ConnectAI() {
         Then run /mcp in Claude Code and choose Authenticate. Other MCP apps: add a remote (HTTP)
         server with the URL above.
       </p>
+      <h3 style={{ fontSize: 16 }}>Try asking</h3>
+      <ul className="try-list">
+        {EXAMPLE_PROMPTS.slice(0, 6).map((e) => (
+          <li key={e.prompt}>
+            <button
+              type="button"
+              title="Copy"
+              onClick={() =>
+                void navigator.clipboard?.writeText(e.prompt).then(() => toast({ text: 'Copied.' }))
+              }
+            >
+              “{e.prompt}”
+            </button>
+          </li>
+        ))}
+      </ul>
+      <p className="sub">Claude also lists ready-made Ratio prompts in its + menu.</p>
       <h3 style={{ fontSize: 16 }}>Connected</h3>
       {q.isPending && <p className="sub">Loading…</p>}
       {!q.isPending && !list.length && <p className="sub">No assistants are connected.</p>}

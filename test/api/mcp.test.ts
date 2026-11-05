@@ -1,5 +1,6 @@
 import { SELF } from 'cloudflare:test';
 import { describe, expect, it } from 'vitest';
+import { EXAMPLE_PROMPTS, MCP_PROMPTS } from '@shared/examples';
 import { ORIGIN, PASSWORD, session } from './helpers';
 
 const REDIRECT = 'https://client.example/callback';
@@ -170,10 +171,14 @@ describe('MCP', () => {
       clientInfo: { name: 'test', version: '1' },
     });
     expect(init.status).toBe(200);
+    const instructions = (init.data.result as { instructions?: string } | undefined)?.instructions;
+    expect(instructions).toContain('call get_started');
+    expect(instructions).toContain(EXAMPLE_PROMPTS[0]!.prompt);
     const tools = await rpc(t, 'tools/list');
     expect(tools.data.result!.tools!.map((x) => x.name)).toEqual(
       expect.arrayContaining([
         'coffee_overview',
+        'get_started',
         'find_beans',
         'get_bean',
         'list_brews',
@@ -326,6 +331,30 @@ describe('MCP', () => {
     expect(risky.error).toMatch(/brew number/);
     const del = await tool<string>(t, 'delete_brew', { brew: String(second.data.logged.num) });
     expect(del.data).toMatch(/Deleted brew/);
+
+    // Orientation: the log's state, the shared examples and the ready-made prompts.
+    const start = await tool<string>(t, 'get_started');
+    expect(start.data).toContain('brews logged');
+    expect(start.data).toContain('finished');
+    for (const e of EXAMPLE_PROMPTS) expect(start.data).toContain(e.prompt);
+    for (const pr of MCP_PROMPTS) expect(start.data).toContain(pr.name);
+
+    const prompts = (await rpc(t, 'prompts/list')).data.result as unknown as {
+      prompts: { name: string; title: string }[];
+    };
+    expect(prompts.prompts.map((x) => x.name).sort()).toEqual(
+      MCP_PROMPTS.map((x) => x.name).sort(),
+    );
+    const got = await rpc(t, 'prompts/get', {
+      name: 'dial_in',
+      arguments: { bean: 'the gachatha' },
+    });
+    expect(JSON.stringify(got.data.result)).toContain('the gachatha');
+    const review = await rpc(t, 'prompts/get', {
+      name: 'weekly_review',
+      arguments: { days: '14' },
+    });
+    expect(JSON.stringify(review.data.result)).toContain('last 14 days');
 
     // The app lists the connection and can revoke it.
     const conns = (await api.get<{ connections: { name: string }[] }>('/connections')).data;

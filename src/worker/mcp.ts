@@ -26,6 +26,7 @@ import {
 import { dayDiff, dayIn, parseLocal, whenIn } from '@shared/logic/tz';
 import { r1, ratioOf, tempIn, tempOut } from '@shared/logic/units';
 import type { AppState, Bean, Brew, Roaster, Settings } from '@shared/types';
+import { EXAMPLE_PROMPTS, MCP_PROMPTS } from '@shared/examples';
 import { app } from './app';
 import { INTERNAL } from './auth';
 
@@ -226,20 +227,26 @@ function beanDetail(b: BeanView, c: Ctx, brewLimit: number) {
   };
 }
 
+const GETTING_STARTED = `
+
+When someone asks what you can do with Ratio (or seems unsure where to start), call get_started: it returns their coffee log's current state and example requests to offer. Suggest two or three that fit, phrased for their bags and gear, rather than listing tools. Examples:
+${EXAMPLE_PROMPTS.map((e) => `- "${e.prompt}"`).join('\n')}`;
+
 function buildServer(call: Call) {
   const server = new McpServer(
     { name: 'ratio', version: '1.0.0' },
     {
-      instructions: [
-        'Ratio is a personal coffee brewing log: roasters → bags of beans → brews.',
-        'Start with coffee_overview to see what is open, recent brews and the owner’s units and equipment.',
-        'Beans, roasters and brews can be named loosely: a partial bean name works, and brews can be "last", "#392" or 392.',
-        'log_brew copies the recipe from that bag’s last brew unless told otherwise, so "log a brew of the Kenya, 8/10, a bit sour" is one call.',
-        'To rate or fix a brew, use update_brew with brew "last" or its number.',
-        'Ratings are 0–10 (halves allowed). Temperatures use the owner’s unit shown in coffee_overview.',
-        'Times without an offset are the owner’s local time.',
-        'To add a photo the owner has (or will take) on their phone, call photo_upload_link and give them the link; a photo seen in the chat cannot be passed to a tool. add_photo takes a public image URL or real base64 bytes.',
-      ].join(' '),
+      instructions:
+        [
+          'Ratio is a personal coffee brewing log: roasters → bags of beans → brews.',
+          'Start with coffee_overview to see what is open, recent brews and the owner’s units and equipment.',
+          'Beans, roasters and brews can be named loosely: a partial bean name works, and brews can be "last", "#392" or 392.',
+          'log_brew copies the recipe from that bag’s last brew unless told otherwise, so "log a brew of the Kenya, 8/10, a bit sour" is one call.',
+          'To rate or fix a brew, use update_brew with brew "last" or its number.',
+          'Ratings are 0–10 (halves allowed). Temperatures use the owner’s unit shown in coffee_overview.',
+          'Times without an offset are the owner’s local time.',
+          'To add a photo the owner has (or will take) on their phone, call photo_upload_link and give them the link; a photo seen in the chat cannot be passed to a tool. add_photo takes a public image URL or real base64 bytes.',
+        ].join(' ') + GETTING_STARTED,
     },
   );
 
@@ -364,6 +371,52 @@ function buildServer(call: Call) {
           .slice(0, 10)
           .map((b) => ({ num: b.num, bean: b.beanName, when: whenIn(b.brewed_at, c.tz) })),
       };
+    }),
+  );
+
+  server.registerTool(
+    'get_started',
+    {
+      title: 'What can I do here?',
+      description:
+        'Call when someone asks what you can do with Ratio or how to start. Returns the coffee log’s current state (bags by status, what’s open, brews waiting for a rating, stock) and example requests that fit it, plus the ready-made prompts.',
+      inputSchema: z.object({}),
+      annotations: { readOnlyHint: true, openWorldHint: false },
+    },
+    safe(async () => {
+      const c = await load();
+      const { m } = c;
+      const count = (st: BeanStatus) => m.beans.filter((b) => b.status === st).length;
+      const open = m.beans.filter((b) => b.status === 'drinking');
+      const ready = m.beans.filter(
+        (b) => b.status === 'resting' && (!b.rest_until || dayDiff(c.today, b.rest_until) <= 0),
+      );
+      const unrated = m.brews.filter(
+        (b) => b.rating == null && !b.rating_skipped && dayDiff(dayIn(b.date, c.tz), c.today) <= 7,
+      );
+      const week = m.brews.filter((b) => dayDiff(dayIn(b.date, c.tz), c.today) <= 6).length;
+      const state = m.beans.length
+        ? [
+            `${m.brews.length} brews logged (${week} in the last 7 days), ${m.beans.length} bags from ${m.roasters.length} roasters.`,
+            `Bags: ${count('drinking')} open, ${count('resting')} resting, ${count('freezing')} in the freezer, ${count('ordered')} on order, ${count('finished')} finished.`,
+            open.length
+              ? `On the bar: ${open.map((b) => `${b.name} (${stockLine(b, c)})`).join('; ')}.`
+              : 'Nothing is open right now.',
+            ready.length ? `Ready to open: ${ready.map((b) => b.name).join(', ')}.` : '',
+            unrated.length
+              ? `${unrated.length} brew(s) from the last week are waiting for a rating.`
+              : '',
+            m.runway != null
+              ? `Stock lasts about ${Math.round(m.runway)} days at the current pace.`
+              : '',
+            `Methods: ${c.s.methods.join(', ') || 'none set'}. Grinders: ${c.s.grinders.join(', ') || 'none set'}.`,
+          ]
+            .filter(Boolean)
+            .join('\n')
+        : 'The log is empty. A good first step is adding the bag they are drinking now (add_bean), then logging a brew of it.';
+      const examples = EXAMPLE_PROMPTS.map((e) => `- "${e.prompt}" — ${e.why}`).join('\n');
+      const prompts = MCP_PROMPTS.map((p) => `- ${p.title} (${p.name}): ${p.does}`).join('\n');
+      return `${state}\n\nThings to offer (fill in <…> from the log above, and suggest the two or three that fit best):\n${examples}\n\nReady-made prompts the person can pick in their app’s prompt menu:\n${prompts}`;
     }),
   );
 
@@ -981,6 +1034,109 @@ function buildServer(call: Call) {
         images_now: count,
       };
     }),
+  );
+
+  // ---------- prompts ----------
+
+  const ask = (text: string) => ({
+    messages: [{ role: 'user' as const, content: { type: 'text' as const, text } }],
+  });
+
+  server.registerPrompt(
+    'dial_in',
+    {
+      title: 'Dial in a bag',
+      description: 'Read every brew of a bag and suggest the next recipe to try.',
+      argsSchema: z.object({
+        bean: z.string().describe('The bag, named loosely ("the kenya", "sey gachatha").'),
+      }),
+    },
+    ({ bean }) =>
+      ask(`Help me dial in "${bean}" in my Ratio coffee log.
+
+1. get_bean it (with plenty of recent brews) and look at the dial_in table, best_brew and last_brew. Use list_brews for that bean if you need more history.
+2. Compare grind, dose, ratio and temperature against rating and the extraction and strength labels. Note what moved the rating and what my "next time" notes said.
+3. Suggest one next recipe (method, grinder, grind, dose, water, temperature) with a one-line reason. Change one or two things at a time, not everything.
+4. Ask if I want it logged when I brew it. Only call log_brew once I say I brewed it.`),
+  );
+
+  server.registerPrompt(
+    'rate_backlog',
+    {
+      title: 'Rate my unrated brews',
+      description: 'Walk through recent unrated brews one by one and save the ratings.',
+      argsSchema: z.object({
+        days: z.string().optional().describe('How many days back to look (default 7).'),
+      }),
+    },
+    ({ days }) =>
+      ask(`Help me rate my unrated brews in Ratio from the last ${days || '7'} days.
+
+1. Call coffee_overview for today's date, then list_brews with rated "unrated" and from set to that many days ago.
+2. Go through them one at a time, newest first: show the bean, when, and the recipe in one line, then ask for a rating out of 10 and anything else I remember (extraction, strength, tasting notes, what to change next time).
+3. Save each answer with update_brew before moving to the next. If I don't remember one, skip it without saving anything.
+4. Finish with a one-line summary of what you saved.`),
+  );
+
+  server.registerPrompt(
+    'what_to_order',
+    {
+      title: 'What should I order next?',
+      description:
+        'Suggest coffees from your order again shortlist and the origins and processes you rate highest.',
+      argsSchema: z.object({
+        notes: z
+          .string()
+          .optional()
+          .describe(
+            'Optional: budget, roaster or style you are after ("something fruity under $25").',
+          ),
+      }),
+    },
+    ({ notes }) =>
+      ask(`Help me decide what coffee to order next from my Ratio log${notes ? `. I'm after: ${notes}` : ''}.
+
+1. Call coffee_overview to see what's open, resting, frozen and on order, and how many days my stock lasts.
+2. Call coffee_insights grouped by origin, then by process (min_brews 2), and read the order_again_shortlist and spend_by_roaster.
+3. Recommend two or three options: reorders from the shortlist and the kinds of coffee I rate highest, with the roasters I've liked. Say whether I need to order now, given my stock.
+4. If I pick one and say I've ordered it, add it with add_bean and status "ordered". Don't add anything before I confirm.`),
+  );
+
+  server.registerPrompt(
+    'finish_bag',
+    {
+      title: 'Finish a bag',
+      description:
+        'Sum up a bag, mark it finished with your buy-again call, and line up the next one.',
+      argsSchema: z.object({
+        bean: z.string().describe('The bag you just finished, named loosely.'),
+      }),
+    },
+    ({ bean }) =>
+      ask(`I just finished "${bean}" in Ratio.
+
+1. get_bean it and sum it up in a few lines: brews, average and best rating, the recipe that worked best, and cost per cup.
+2. Ask whether I'd buy it again (definitely, yes, maybe or no), then call update_bean with status "finished" and that buy_again.
+3. Call coffee_overview and suggest which bag to open next (resting bags that are ready first, then the freezer). Ask before moving it to drinking with update_bean.`),
+  );
+
+  server.registerPrompt(
+    'weekly_review',
+    {
+      title: 'Weekly coffee review',
+      description:
+        'What you brewed, how it rated, what is ready to open, and how long stock lasts.',
+      argsSchema: z.object({
+        days: z.string().optional().describe('How many days to review (default 7).'),
+      }),
+    },
+    ({ days }) =>
+      ask(`Give me a review of my coffee from the last ${days || '7'} days in Ratio.
+
+1. Call coffee_overview, then list_brews from that many days ago (limit 100), then coffee_insights with that many days.
+2. Summarize: how many brews, average rating, the best and worst brew and why, and any pattern in the extraction labels.
+3. Say what's ready to open, what's running low, and how many days my stock lasts.
+4. End with one concrete thing to try next week. Don't change any data.`),
   );
 
   return server;
