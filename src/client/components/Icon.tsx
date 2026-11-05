@@ -7,6 +7,7 @@ const P = {
     '<rect x="4" y="7" width="16" height="13" rx="2"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M3 3l18 18"/>',
   layers: '<path d="M12 3l9 5-9 5-9-5 9-5zM3 13l9 5 9-5"/>',
   plus: '<path d="M12 5v14M5 12h14"/>',
+  mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3.5 6.5l8.5 6.5 8.5-6.5"/>',
   bean: '<ellipse cx="12" cy="12" rx="6.5" ry="9.2" transform="rotate(45 12 12)"/><path d="M7.6 16.4c1.9-.6 3-1.8 3.6-3.4s1.3-3.4 3.4-4.6c.6-.4 1.2-.6 1.8-.8"/>',
   home: '<path d="M4 11l8-7 8 7"/><path d="M6 9.5V20h12V9.5"/><path d="M10 20v-5h4v5"/>',
   check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',

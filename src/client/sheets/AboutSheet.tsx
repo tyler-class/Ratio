@@ -4,6 +4,7 @@ import { useSheets } from './context';
 
 const LINKS: [string, string, IconName][] = [
   ['https://github.com/tyler-class/ratio', 'Ratio on GitHub', 'github'],
+  ['mailto:ratio@tylerclass.net', 'Questions or help? ratio@tylerclass.net', 'mail'],
   [
     'https://ko-fi.com/tylerclass',
     'If you want to say thank you, coffee is my love language',
@@ -23,7 +24,12 @@ export function AboutSheet() {
       <p className="sub">Built by Tyler Class.</p>
       <div style={{ marginTop: 8 }}>
         {LINKS.map(([href, label, icon]) => (
-          <a key={href} className="link-row" href={href} target="_blank" rel="noreferrer">
+          <a
+            key={href}
+            className="link-row"
+            href={href}
+            {...(href.startsWith('mailto:') ? {} : { target: '_blank', rel: 'noreferrer' })}
+          >
             <Icon name={icon} size={18} />
             <span>{label}</span>
             <Icon name="chevRight" size={16} />
