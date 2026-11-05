@@ -23,7 +23,7 @@ One deployment is one coffee log.
 2. Cloudflare copies this repo to your GitHub or GitLab account, creates the database, image bucket and key-value store, and asks for **APP_PASSWORD**. That’s the password you’ll sign in with. Pick something long.
 3. When the deploy finishes, open the `*.workers.dev` link, sign in, and add your first bag.
 
-The deploy runs the database migrations for you (`npm run deploy`).
+Cloudflare runs the database migrations on every deploy (`npm run deploy`), before the new version goes live.
 
 ### By hand
 
@@ -35,7 +35,7 @@ npx wrangler secret put APP_PASSWORD
 npm run deploy
 ```
 
-`npm run deploy` builds the app, deploys the Worker and applies migrations to the remote database. Wrangler creates the D1 database, the R2 bucket (`ratio-images`) and the KV namespace on the first deploy. If your Wrangler version asks you to create them yourself, run `npx wrangler d1 create ratio`, `npx wrangler r2 bucket create ratio-images` and `npx wrangler kv namespace create OAUTH_KV`, then add the ids it prints to `wrangler.jsonc`.
+`npm run deploy` builds the app, applies migrations to the remote database, then deploys the Worker (on the very first deploy, when the database doesn’t exist yet, it deploys first and then migrates). Wrangler creates the D1 database, the R2 bucket (`ratio-images`) and the KV namespace on the first deploy. If your Wrangler version asks you to create them yourself, run `npx wrangler d1 create ratio`, `npx wrangler r2 bucket create ratio-images` and `npx wrangler kv namespace create OAUTH_KV`, then add the ids it prints to `wrangler.jsonc`.
 
 ## Use it on your phone
 
@@ -96,7 +96,11 @@ Everyone is signed out and signs in again with the new password. Connected AI as
 
 ## Update your copy
 
-If you deployed with the button, your copy lives in your own GitHub account. To get new versions, open it on GitHub and click **Sync fork** (or merge from `tyler-class/ratio`). Cloudflare redeploys automatically and runs any new migrations.
+If you deployed with the button, your copy lives in your own GitHub account and updates itself: every Monday a GitHub Action takes the latest Ratio and pushes it to your copy, and Cloudflare migrates the database and redeploys. To update right away, open your copy on GitHub, go to **Actions → Update Ratio** and click **Run workflow**. Your data is in the database and R2, not the repo, so updates don’t touch it.
+
+The update replaces the app’s code, so changes you made to your copy’s code are overwritten. Your `.github/workflows` and a `wrangler.jsonc` with your database id are kept.
+
+If you deployed by hand, `git pull` and `npm run deploy`.
 
 ## Local development
 
@@ -113,7 +117,8 @@ npm run dev
 | `npm run build` / `preview`  | Production build / serve the build locally         |
 | `npm test`                   | Unit tests and Workers-runtime API tests (Vitest)  |
 | `npm run typecheck` / `lint` | TypeScript, ESLint and Prettier                    |
-| `npm run deploy`             | Build, deploy, migrate the remote database         |
+| `npm run deploy`             | Build, migrate the remote database, then deploy    |
+| `npm run release`            | Migrate, then deploy (no build; Workers Builds)    |
 | `npm run db:migrate:local`   | Apply migrations to the local database             |
 | `npm run db:migrate:remote`  | Apply migrations to the deployed database          |
 

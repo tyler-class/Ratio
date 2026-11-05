@@ -1,6 +1,6 @@
 {
   "name": "ratio",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "private": true,
   "description": "A coffee brewing log you host yourself on Cloudflare.",
   "license": "MIT",
@@ -9,7 +9,8 @@
     "dev": "vite dev",
     "build": "vite build",
     "preview": "npm run build && vite preview",
-    "deploy": "npm run build && wrangler deploy && wrangler d1 migrations apply DB --remote",
+    "deploy": "npm run build && npm run release",
+    "release": "tsx scripts/release.ts",
     "db:migrate:local": "wrangler d1 migrations apply DB --local",
     "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
     "cf-typegen": "wrangler types src/worker/worker-configuration.d.ts",
