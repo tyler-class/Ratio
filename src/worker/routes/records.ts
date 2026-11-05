@@ -74,7 +74,7 @@ records.delete('/roasters/:id', async (c) => {
 records.post('/beans', async (c) => {
   const input = await body(c, beanInput);
   await checkRoaster(c.env.DB, input.roaster_id);
-  if (input.status === 'received' && !input.received_on) input.received_on = await today(c.env.DB);
+  if (input.status !== 'ordered' && !input.received_on) input.received_on = await today(c.env.DB);
   const id = newId();
   const now = nowIso();
   await insertStmt(c.env.DB, 'beans', {
@@ -109,7 +109,7 @@ async function today(db: D1Database) {
 
 /**
  * Moving a bag along stamps the date it happened, unless the request sets it itself:
- * arrived → received_on, out of the freezer → thawed_on, done → finished_on.
+ * off the order list → received_on, out of the freezer → thawed_on, done → finished_on.
  */
 export function statusDates(
   prev: Pick<Bean, 'status' | 'received_on' | 'thawed_on' | 'finished_on'>,
@@ -119,7 +119,8 @@ export function statusDates(
   const out: Partial<BeanFields> = {};
   const has = (k: keyof BeanFields) => k in input;
   const s = input.status;
-  if (s === 'received' && !prev.received_on && !has('received_on')) out.received_on = day;
+  if (prev.status === 'ordered' && s !== 'ordered' && !prev.received_on && !has('received_on'))
+    out.received_on = day;
   if (prev.status === 'freezing' && (s === 'resting' || s === 'drinking') && !has('thawed_on'))
     out.thawed_on = day;
   if (s === 'finished' && !prev.finished_on && !has('finished_on')) out.finished_on = day;
@@ -143,7 +144,7 @@ records.post('/brews', async (c) => {
   await checkBean(c.env.DB, input.bean_id);
   const id = newId();
   const now = nowIso();
-  const fields: Record<string, unknown> = {
+  const fields: Record<string, unknown> = encode({
     id,
     ...input,
     extraction: input.extraction ?? null,
@@ -151,7 +152,7 @@ records.post('/brews', async (c) => {
     brewed_at: brewed_at ? new Date(brewed_at).toISOString() : now,
     created_at: now,
     updated_at: now,
-  };
+  });
   const cols = Object.keys(fields);
   // Brew numbers count up from 1, like the Airtable autonumber they replace.
   await c.env.DB.prepare(
@@ -170,7 +171,7 @@ records.patch('/brews/:id', async (c) => {
   await checkBean(c.env.DB, rest.bean_id);
   const input: Record<string, unknown> = { ...rest };
   if (brewed_at) input.brewed_at = new Date(brewed_at).toISOString();
-  if (Object.keys(input).length) await updateStmt(c.env.DB, 'brews', id, input).run();
+  if (Object.keys(input).length) await updateStmt(c.env.DB, 'brews', id, encode(input)).run();
   return c.json((await loadBrews(c.env.DB, id))[0]);
 });
 

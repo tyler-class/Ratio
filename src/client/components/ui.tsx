@@ -53,7 +53,7 @@ export function Seg<K extends string>({
 
 export const strOpts = (list: readonly string[]): Opt[] => list.map((s) => ({ key: s, label: s }));
 
-/** Chips for known values plus "Other…" to type a new one. */
+/** Chips for known values plus a dashed "New" chip to type one. */
 export function ChoiceInput({
   options,
   value,
@@ -87,8 +87,8 @@ export function ChoiceInput({
       ))}
       {typing ? (
         <input
-          className="in"
-          style={{ maxWidth: 220, minHeight: 38 }}
+          className="in chip-in"
+          style={{ maxWidth: 220 }}
           autoFocus={!value}
           value={value}
           placeholder={placeholder ?? 'Type one'}
@@ -97,14 +97,129 @@ export function ChoiceInput({
       ) : (
         <button
           type="button"
-          className={cx('chip', small && 'sm')}
+          className={cx('chip new', small && 'sm')}
           onClick={() => {
             setTyping(true);
             onChange('');
           }}
         >
-          Other…
+          <Icon name="plus" size={14} /> New
         </button>
+      )}
+    </div>
+  );
+}
+
+export interface SelectGroup {
+  label?: string;
+  options: { value: string; label: string }[];
+}
+
+/** A styled dropdown: a field-like button that opens a list below it. */
+export function Select({
+  value,
+  onChange,
+  groups,
+  placeholder = 'Choose',
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  groups: SelectGroup[];
+  placeholder?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [hi, setHi] = useState(-1);
+  const root = useRef<HTMLDivElement>(null);
+  const list = useRef<HTMLDivElement>(null);
+  const listId = useId();
+  const flat = groups.flatMap((g) => g.options);
+  const current = flat.find((o) => o.value === value);
+
+  useEffect(() => {
+    if (!open) return;
+    const away = (e: PointerEvent) => {
+      if (!root.current?.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('pointerdown', away);
+    return () => document.removeEventListener('pointerdown', away);
+  }, [open]);
+  useEffect(() => {
+    if (!open || hi < 0) return;
+    list.current?.querySelector(`[data-i="${hi}"]`)?.scrollIntoView({ block: 'nearest' });
+  }, [open, hi]);
+
+  const show = () => {
+    setHi(
+      Math.max(
+        0,
+        flat.findIndex((o) => o.value === value),
+      ),
+    );
+    setOpen(true);
+  };
+  const pick = (v: string) => {
+    onChange(v);
+    setOpen(false);
+  };
+  const onKey = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape' && open) {
+      e.stopPropagation();
+      e.nativeEvent.stopImmediatePropagation();
+      setOpen(false);
+    } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (!open) return show();
+      const d = e.key === 'ArrowDown' ? 1 : -1;
+      setHi((i) => Math.max(0, Math.min(flat.length - 1, i + d)));
+    } else if ((e.key === 'Enter' || e.key === ' ') && open && flat[hi]) {
+      e.preventDefault();
+      pick(flat[hi].value);
+    }
+  };
+
+  const offset = groups.map((_, gi) =>
+    groups.slice(0, gi).reduce((sum, g) => sum + g.options.length, 0),
+  );
+  return (
+    <div className="sel" ref={root} onKeyDown={onKey}>
+      <button
+        type="button"
+        className={cx('in sel-btn', !current && 'ph')}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-controls={listId}
+        onClick={() => (open ? setOpen(false) : show())}
+      >
+        <span className="sel-val">{current?.label ?? placeholder}</span>
+        <Icon name="chevDown" size={16} />
+      </button>
+      {open && (
+        <div className="sel-list" role="listbox" id={listId} ref={list}>
+          {groups.map((g, gi) =>
+            g.options.length ? (
+              <div key={g.label ?? gi} role="group" aria-label={g.label}>
+                {g.label && <div className="sel-grp">{g.label}</div>}
+                {g.options.map((o, oi) => {
+                  const n = (offset[gi] ?? 0) + oi;
+                  return (
+                    <div
+                      key={o.value}
+                      role="option"
+                      data-i={n}
+                      aria-selected={o.value === value}
+                      className={cx('sel-opt', n === hi && 'hi')}
+                      onPointerEnter={() => setHi(n)}
+                      onClick={() => pick(o.value)}
+                    >
+                      <span>{o.label}</span>
+                      {o.value === value && <Icon name="check" size={15} />}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : null,
+          )}
+        </div>
       )}
     </div>
   );

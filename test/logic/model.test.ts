@@ -40,6 +40,7 @@ let n = 0;
 function brew(p: Partial<Brew>): Brew {
   n++;
   return {
+    rating_skipped: false,
     id: `x${n}`,
     num: n,
     bean_id: 'b1',

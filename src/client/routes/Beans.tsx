@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useSearchParams } from 'react-router';
+import { statusOf } from '@shared/lookups';
 import { r1 } from '@shared/logic/units';
 import type { BeanView } from '@shared/logic/model';
 import { useModel } from '../lib/queries';
@@ -10,11 +11,10 @@ import { PageHeader, RB } from '../components/ui';
 import { useSheets } from '../sheets/context';
 
 const FILTERS: { k: string; label: string; f: (b: BeanView) => boolean }[] = [
-  { k: 'drinking', label: 'Drinking', f: (b) => b.status === 'drinking' },
-  { k: 'resting', label: 'Resting', f: (b) => b.status === 'resting' },
-  { k: 'freezing', label: 'Freezer', f: (b) => b.status === 'freezing' },
-  { k: 'incoming', label: 'Incoming', f: (b) => b.status === 'ordered' || b.status === 'received' },
-  { k: 'finished', label: 'Finished', f: (b) => b.status === 'finished' },
+  ...(['ordered', 'resting', 'freezing', 'drinking', 'finished'] as const).map((k) => {
+    const st = statusOf(k)!;
+    return { k, label: `${st.icon} ${st.label}`, f: (b: BeanView) => b.status === k };
+  }),
   { k: 'all', label: 'All', f: () => true },
 ];
 

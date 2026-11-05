@@ -6,7 +6,7 @@ A calm coffee brewing log you host yourself. Track the bags you buy, log every b
 
 - **Log a brew in seconds.** Pick the bag and Ratio fills in your last recipe: grind, dose, ratio, temperature. Lock the ratio and the water follows the dose. Rate it now or later.
 - **Dial in.** Each bag shows how every grind setting rated, your best recipe, and last time’s “next time” note.
-- **Every bag, start to finish.** Ordered → received → freezer or resting → drinking → finished, with dates stamped as you go. See grams left, cups left, cost per cup, and how long your stock will last.
+- **Every bag, start to finish.** Ordered → resting or freezing → drinking → finished, with dates stamped as you go. See grams left, cups left, cost per cup, and how long your stock will last.
 - **Photos.** Snap the bag and the roaster’s logo. Images are resized on your phone and stored in your own R2 bucket.
 - **Insights.** A brewing calendar, ratings by origin, process, roaster, method or grinder, which ratios rate best, how your dial-in is trending, top bags, a reorder shortlist and spend by roaster.
 - **AI assistants.** Connect Claude, ChatGPT or any MCP-capable assistant and talk to your log: “log a V60 of the Kenya, 8 out of 10, a bit sour”, “what grind worked best for the Hologram?”, “move the Gesha out of the freezer”.

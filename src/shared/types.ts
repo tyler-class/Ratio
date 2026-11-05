@@ -60,6 +60,8 @@ export interface Brew {
   strength: Strength | null;
   tasting_notes: string | null;
   next_time: string | null;
+  /** Dismissed from "Waiting for a rating" without rating it. */
+  rating_skipped: boolean;
 }
 
 export type TempUnit = 'F' | 'C';

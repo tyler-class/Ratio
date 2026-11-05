@@ -9,6 +9,7 @@ import {
   EXTRACTION,
   EXTRACTION_KEYS,
   LIVE_STATUSES,
+  normalizeStatus,
   STATUS_KEYS,
   STRENGTH_KEYS,
   type BeanStatus,
@@ -173,7 +174,6 @@ function stockLine(b: BeanView, c: Ctx): string {
   }
   if (b.status === 'freezing') return `in the freezer${b.bag_g ? `, ${b.bag_g} g` : ''}`;
   if (b.status === 'ordered') return 'on the way';
-  if (b.status === 'received') return `arrived${b.bag_g ? `, ${b.bag_g} g` : ''}`;
   return `finished after ${b.brews.length} brews`;
 }
 
@@ -357,10 +357,10 @@ function buildServer(call: Call) {
         drinking: group('drinking'),
         resting: group('resting'),
         freezer: group('freezing'),
-        incoming: [...group('received'), ...group('ordered')],
+        ordered: group('ordered'),
         recent_brews: m.brews.slice(0, 6).map((b) => brewOut(b, c)),
         waiting_for_rating: m.brews
-          .filter((b) => b.rating == null && inDays(b, 7))
+          .filter((b) => b.rating == null && !b.rating_skipped && inDays(b, 7))
           .slice(0, 10)
           .map((b) => ({ num: b.num, bean: b.beanName, when: whenIn(b.brewed_at, c.tz) })),
       };
@@ -799,7 +799,7 @@ function buildServer(call: Call) {
 
   const beanFields = {
     roaster: z.string().nullable().optional().describe('Roaster name; created if new'),
-    status: z.enum(STATUS_KEYS).optional(),
+    status: z.preprocess(normalizeStatus, z.enum(STATUS_KEYS)).optional(),
     roasted_on: z.string().nullable().optional().describe('YYYY-MM-DD'),
     received_on: z.string().nullable().optional(),
     rest_until: z.string().nullable().optional(),
@@ -828,7 +828,7 @@ function buildServer(call: Call) {
     {
       title: 'Add a bag',
       description:
-        'Add a new bag of coffee. Status defaults to received (arrived today). Use ordered for coffee on the way, freezing to bank it, resting while it degasses (set rest_until), drinking once open.',
+        'Add a new bag of coffee. Status defaults to resting (arrived today, degassing; set rest_until). Use ordered for coffee on the way, freezing to bank it, drinking once open.',
       inputSchema: z.object({ name: z.string().min(1), ...beanFields }),
     },
     safe(async ({ roaster, ...a }) => {
@@ -846,7 +846,7 @@ function buildServer(call: Call) {
     {
       title: 'Update a bag',
       description:
-        'Change a bag: move it along (ordered → received → freezing/resting → drinking → finished; dates are stamped automatically), say whether you’d buy it again, or edit any detail. Pass null to clear a field.',
+        'Change a bag: move it along (ordered → resting/freezing → drinking → finished; dates are stamped automatically), say whether you’d buy it again, or edit any detail. Pass null to clear a field.',
       inputSchema: z.object({
         bean: z.string(),
         name: z.string().min(1).optional(),

@@ -15,7 +15,7 @@ import type { Settings } from '@shared/types';
 import { ellipsis, numStr, parseNum } from '../lib/format';
 import { useActions } from '../lib/queries';
 import { useToast } from '../components/Toast';
-import { ChoiceInput, ConfirmButton, Field, RB, Seg, Sheet } from '../components/ui';
+import { ChoiceInput, ConfirmButton, Field, RB, Select, Seg, Sheet } from '../components/ui';
 import { useSheets, type LogPrefill } from './context';
 
 export interface RateValues {
@@ -133,6 +133,21 @@ export function RateSheet({ m, s, brewId }: { m: Model; s: Settings; brewId: str
       toast({ text: `Saved rating for #${b.num}` });
     }
   };
+  const skip = async () => {
+    setBusy(true);
+    const ok = await actions.brews.update(b.id, { rating_skipped: true });
+    setBusy(false);
+    if (ok) {
+      sheets.close();
+      toast({
+        text: `Skipped #${b.num}`,
+        action: {
+          label: 'Undo',
+          run: () => void actions.brews.update(b.id, { rating_skipped: false }),
+        },
+      });
+    }
+  };
   return (
     <Sheet
       title="Rate this brew"
@@ -140,6 +155,11 @@ export function RateSheet({ m, s, brewId }: { m: Model; s: Settings; brewId: str
       onClose={sheets.close}
       footer={
         <>
+          {b.rating == null && !b.rating_skipped && (
+            <button type="button" className="btn ghost left" disabled={busy} onClick={skip}>
+              Skip
+            </button>
+          )}
           <button type="button" className="btn ghost" onClick={sheets.close}>
             Cancel
           </button>
@@ -343,20 +363,18 @@ export function BrewSheet({
             ))}
           </div>
         )}
-        <select className="in" value={f.beanId} onChange={(e) => pickBean(e.target.value)}>
-          <option value="">Choose a bean</option>
-          {groups.map((g) =>
-            g.items.length ? (
-              <optgroup key={g.st.key} label={g.st.label}>
-                {g.items.map((b) => (
-                  <option key={b.id} value={b.id}>
-                    {b.name + (b.roasterName ? ` · ${b.roasterName}` : '')}
-                  </option>
-                ))}
-              </optgroup>
-            ) : null,
-          )}
-        </select>
+        <Select
+          value={f.beanId}
+          onChange={pickBean}
+          placeholder="Choose a bean"
+          groups={groups.map((g) => ({
+            label: `${g.st.icon} ${g.st.label}`,
+            options: g.items.map((b) => ({
+              value: b.id,
+              label: b.name + (b.roasterName ? ` · ${b.roasterName}` : ''),
+            })),
+          }))}
+        />
         {m.beans.length === 0 && (
           <button
             type="button"
@@ -404,7 +422,7 @@ export function BrewSheet({
         />
       </Field>
       <Field label="Grind setting">
-        <div className="step">
+        <div className="step compact">
           <button type="button" aria-label="Finer" onClick={() => nudgeGrind(-0.2)}>
             −
           </button>

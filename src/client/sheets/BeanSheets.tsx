@@ -21,7 +21,7 @@ import { useToast } from '../components/Toast';
 import { Legend, Scatter } from '../components/charts';
 import { Photos } from '../components/Photos';
 import { flags } from '../components/BeanCard';
-import { ChoiceInput, ConfirmButton, Field, RB, Seg, Sheet, Stat } from '../components/ui';
+import { ChoiceInput, ConfirmButton, Field, RB, Select, Seg, Sheet, Stat } from '../components/ui';
 import { useSheets } from './context';
 
 const statusOpts = STATUSES.map((s) => ({ key: s.key, label: `${s.icon} ${s.label}` }));
@@ -225,7 +225,7 @@ export function BeanForm({ m, beanId }: { m: Model; beanId?: string }) {
     name: b?.name ?? '',
     roaster: b?.roaster_id ?? '',
     newRoaster: '',
-    status: (b?.status ?? 'received') as BeanStatus,
+    status: (b?.status ?? 'resting') as BeanStatus,
     origins: b?.origins ?? [],
     varieties: b?.varieties ?? [],
     process: b?.process ?? '',
@@ -330,15 +330,14 @@ export function BeanForm({ m, beanId }: { m: Model; beanId?: string }) {
         />
       </Field>
       <Field label="Roaster">
-        <select className="in" value={f.roaster} onChange={(e) => set({ roaster: e.target.value })}>
-          <option value="">Choose</option>
-          {m.roasters.map((r) => (
-            <option key={r.id} value={r.id}>
-              {r.name}
-            </option>
-          ))}
-          <option value="__new">+ New roaster</option>
-        </select>
+        <Select
+          value={f.roaster}
+          onChange={(v) => set({ roaster: v })}
+          groups={[
+            { options: m.roasters.map((r) => ({ value: r.id, label: r.name })) },
+            { options: [{ value: '__new', label: '+ New roaster' }] },
+          ]}
+        />
         {f.roaster === '__new' && (
           <input
             className="in"
@@ -627,15 +626,15 @@ export function RoasterSheet({ m, roasterId }: { m: Model; roasterId?: string })
             placeholder="example.coffee"
             onChange={(e) => set({ website: e.target.value })}
           />
+          {r && f.website && (
+            <p className="sub" style={{ margin: '8px 0 0' }}>
+              <a href={href} target="_blank" rel="noreferrer">
+                Open website
+              </a>
+            </p>
+          )}
         </div>
       </div>
-      {r && f.website && (
-        <p className="sub" style={{ marginTop: -8, marginBottom: 18 }}>
-          <a href={href} target="_blank" rel="noreferrer">
-            Open website
-          </a>
-        </p>
-      )}
       <Field label="Notes">
         <textarea className="in" value={f.notes} onChange={(e) => set({ notes: e.target.value })} />
       </Field>

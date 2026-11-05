@@ -50,6 +50,7 @@ export const TABLE_COLUMNS = {
     'strength',
     'tasting_notes',
     'next_time',
+    'rating_skipped',
     'created_at',
     'updated_at',
   ],

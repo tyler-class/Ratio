@@ -18,7 +18,7 @@ describe('records', () => {
       cost: 22,
     });
     expect(b.status).toBe(201);
-    expect(b.data.status).toBe('received');
+    expect(b.data.status).toBe('resting');
     expect(b.data.received_on).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     expect(b.data.origins).toEqual(['Ethiopia', 'Colombia']);
 
@@ -39,6 +39,14 @@ describe('records', () => {
     expect(bad.status).toBe(400);
     const badRating = await api.post('/brews', { bean_id: b.data.id, rating: 11 });
     expect(badRating.status).toBe(400);
+
+    const skipped = (await api.patch<Brew>(`/brews/${b1.id}`, { rating_skipped: true })).data;
+    expect(skipped.rating_skipped).toBe(true);
+    expect(b2.rating_skipped).toBe(false);
+
+    // "received" was retired; old clients and backups land on resting.
+    const old = await api.post<Bean>('/beans', { name: 'Old client', status: 'received' });
+    expect(old.data.status).toBe('resting');
   });
 
   it('PATCH changes only what is sent, and stamps status dates', async () => {
@@ -51,7 +59,7 @@ describe('records', () => {
         process: 'Washed',
       })
     ).data;
-    expect(b.received_on).toBeNull();
+    expect(b.received_on).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     const renamed = (await api.patch<Bean>(`/beans/${b.id}`, { name: 'Kenya AA' })).data;
     expect(renamed).toMatchObject({ status: 'freezing', origins: ['Kenya'], process: 'Washed' });
 

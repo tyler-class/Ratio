@@ -5,7 +5,7 @@ import { dayKey, dayLabel, daysBetween, inDays, MO, parseDay, WD } from '@shared
 import { mean } from '@shared/logic/model';
 import { fmtN, r1 } from '@shared/logic/units';
 import { ellipsis, money } from '../lib/format';
-import { useModel } from '../lib/queries';
+import { useActions, useModel } from '../lib/queries';
 import { BeanCard } from '../components/BeanCard';
 import { BrewRow } from '../components/BrewRow';
 import { Icon } from '../components/Icon';
@@ -15,6 +15,7 @@ import { useSheets } from '../sheets/context';
 export function Home() {
   const data = useModel();
   const sheets = useSheets();
+  const actions = useActions();
   const [open, setOpen] = useState<string | null>(null);
   if (!data) return null;
   const { m, state } = data;
@@ -29,15 +30,14 @@ export function Home() {
   const cpc = mean(
     m.brews.filter((b) => daysBetween(b.date, now) <= 29 && b.cup != null).map((b) => b.cup!),
   );
-  const last = m.brews[0];
   const drinking = m.beans
     .filter((b) => b.status === 'drinking')
     .sort((a, b) => (b.last?.date.getTime() ?? 0) - (a.last?.date.getTime() ?? 0));
   const resting = m.beans.filter((b) => b.status === 'resting');
   const freezer = m.beans.filter((b) => b.status === 'freezing');
-  const incoming = m.beans.filter((b) => b.status === 'ordered' || b.status === 'received');
+  const incoming = m.beans.filter((b) => b.status === 'ordered');
   const needs = m.brews
-    .filter((b) => b.rating == null && daysBetween(b.date, now) <= 7)
+    .filter((b) => b.rating == null && !b.rating_skipped && daysBetween(b.date, now) <= 7)
     .slice(0, 8);
   const upRow = (id: string, icon: string, title: string, sub: string, roaster: string) => (
     <div className="ri" key={id}>
@@ -70,15 +70,6 @@ export function Home() {
           <button type="button" className="btn primary" onClick={() => sheets.log()}>
             <Icon name="plus" size={18} /> Log a brew
           </button>
-          {last && (
-            <button
-              type="button"
-              className="btn"
-              onClick={() => sheets.log({ fromBrewId: last.id })}
-            >
-              Brew again
-            </button>
-          )}
         </div>
       </div>
 
@@ -105,6 +96,15 @@ export function Home() {
         <div className="sec">
           <div className="sec-h">
             <h2>Waiting for a rating</h2>
+            <button
+              type="button"
+              className="more"
+              onClick={() =>
+                needs.forEach((b) => void actions.brews.update(b.id, { rating_skipped: true }))
+              }
+            >
+              Skip all
+            </button>
           </div>
           <div className="hscroll">
             {needs.map((b) => (

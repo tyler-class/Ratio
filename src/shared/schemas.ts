@@ -1,6 +1,12 @@
 // Request bodies. Shared so the client and Worker agree on shapes.
 import { z } from 'zod';
-import { BUY_AGAIN_KEYS, EXTRACTION_KEYS, STATUS_KEYS, STRENGTH_KEYS } from './lookups';
+import {
+  BUY_AGAIN_KEYS,
+  EXTRACTION_KEYS,
+  STATUS_KEYS,
+  STRENGTH_KEYS,
+  normalizeStatus,
+} from './lookups';
 
 /** Optional text: blank becomes null, so clearing a field in a form clears it in the database. */
 const text = (max = 2000) =>
@@ -22,6 +28,7 @@ const num = (min: number, max: number) =>
     .max(max)
     .nullish()
     .transform((v) => v ?? null);
+const status = z.preprocess(normalizeStatus, z.enum(STATUS_KEYS));
 const tags = z
   .array(z.string().trim().min(1).max(100))
   .max(30)
@@ -51,7 +58,7 @@ export const roasterPatch = roasterInput.partial();
 const beanFields = z.object({
   name: name(),
   roaster_id: z.string().nullish(),
-  status: z.enum(STATUS_KEYS),
+  status,
   roasted_on: day,
   received_on: day,
   rest_until: day,
@@ -71,7 +78,7 @@ const beanFields = z.object({
   buy_again: z.enum(BUY_AGAIN_KEYS).nullish(),
 });
 export const beanInput = beanFields.extend({
-  status: z.enum(STATUS_KEYS).default('received'),
+  status: status.default('resting'),
   origins: tags.default([]),
   varieties: tags.default([]),
 });
@@ -92,6 +99,7 @@ export const brewInput = z.object({
   strength: z.enum(STRENGTH_KEYS).nullish(),
   tasting_notes: text(),
   next_time: text(500),
+  rating_skipped: z.boolean().optional(),
 });
 export const brewPatch = brewInput.partial();
 

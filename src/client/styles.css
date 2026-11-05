@@ -524,6 +524,102 @@ textarea.in {
   font-size: 20px;
   font-weight: 600;
 }
+.step.compact {
+  max-width: 220px;
+}
+.step.compact .in {
+  min-width: 0;
+}
+/* "New" chip: dashed to read as an action, not a value. */
+.chip.new {
+  border-style: dashed;
+  background: transparent;
+}
+.chip.new svg {
+  margin-left: -3px;
+}
+.chip-in {
+  min-height: 38px;
+  border-radius: 999px;
+  padding: 6px 15px;
+  border-style: dashed;
+}
+
+/* Styled dropdown (Select in ui.tsx). */
+.sel {
+  position: relative;
+}
+.sel-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-right: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+.sel-btn.ph {
+  color: var(--ink2);
+}
+.sel-btn svg {
+  flex: none;
+  color: var(--ink2);
+  transition: transform 0.15s ease;
+}
+.sel-btn[aria-expanded='true'] svg {
+  transform: rotate(180deg);
+}
+.sel-val {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sel-list {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  max-height: 280px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: var(--sh);
+  padding: 6px;
+}
+.sel-list > div + div {
+  border-top: 1px solid var(--line);
+  margin-top: 6px;
+  padding-top: 6px;
+}
+.sel-grp {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ink2);
+  padding: 6px 10px 4px;
+}
+.sel-opt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 15px;
+}
+.sel-opt.hi {
+  background: var(--surface2);
+}
+.sel-opt[aria-selected='true'] {
+  color: var(--accent);
+  font-weight: 600;
+}
 .ratio {
   display: flex;
   align-items: center;
@@ -1177,4 +1273,24 @@ textarea.in {
     transform: none;
     opacity: 1;
   }
+}
+.kofi {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0 2px;
+  border-top: 1px solid var(--line);
+  color: var(--ink);
+  text-decoration: none;
+}
+.kofi svg:first-child {
+  color: var(--accent);
+  flex: none;
+}
+.kofi span {
+  flex: 1;
+}
+.kofi svg:last-child {
+  color: var(--ink2);
+  flex: none;
 }

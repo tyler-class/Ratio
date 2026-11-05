@@ -1,4 +1,4 @@
-import { DEFAULT_METHODS, type BeanStatus, type BuyAgain } from '@shared/lookups';
+import { DEFAULT_METHODS, normalizeStatus, type BeanStatus, type BuyAgain } from '@shared/lookups';
 import type { AppState, Bean, Brew, ImageRef, Roaster, Settings, TempUnit } from '@shared/types';
 
 export type Row = Record<string, unknown>;
@@ -60,7 +60,10 @@ const arr = (v: unknown): string[] => {
 /** JSON-encodes string-array columns before they're written. */
 export function encode<T extends Record<string, unknown>>(fields: T): Record<string, unknown> {
   return Object.fromEntries(
-    Object.entries(fields).map(([k, v]) => [k, Array.isArray(v) ? JSON.stringify(v) : v]),
+    Object.entries(fields).map(([k, v]) => [
+      k,
+      Array.isArray(v) ? JSON.stringify(v) : typeof v === 'boolean' ? (v ? 1 : 0) : v,
+    ]),
   );
 }
 
@@ -90,7 +93,7 @@ export function toBean(r: Row, images: ImageRef[] = []): Bean {
     id: String(r.id),
     name: String(r.name),
     roaster_id: s(r.roaster_id),
-    status: String(r.status) as BeanStatus,
+    status: normalizeStatus(String(r.status)) as BeanStatus,
     roasted_on: s(r.roasted_on),
     received_on: s(r.received_on),
     rest_until: s(r.rest_until),
@@ -131,6 +134,7 @@ export function toBrew(r: Row): Brew {
     strength: (s(r.strength) as Brew['strength']) ?? null,
     tasting_notes: s(r.tasting_notes),
     next_time: s(r.next_time),
+    rating_skipped: !!r.rating_skipped,
   };
 }
 

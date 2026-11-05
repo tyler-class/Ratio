@@ -22,8 +22,6 @@ export function stockLine(b: BeanView, m: Model, now = new Date()): string {
       return `In the freezer · ${b.bag_g ?? '?'} g`;
     case 'ordered':
       return 'On the way';
-    case 'received':
-      return `Arrived · ${b.bag_g ?? '?'} g`;
     default:
       return `${b.brews.length} brews${b.avg != null ? ` · avg ${r1(b.avg)}` : ''}`;
   }

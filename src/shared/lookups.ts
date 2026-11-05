@@ -5,16 +5,18 @@ export type Tone = 'good' | 'warn' | 'bad' | 'blue';
 
 export const STATUSES = [
   { key: 'ordered', label: 'Ordered', icon: '🧾' },
-  { key: 'received', label: 'Received', icon: '📦' },
-  { key: 'freezing', label: 'Freezer', icon: '❄️' },
   { key: 'resting', label: 'Resting', icon: '💤' },
+  { key: 'freezing', label: 'Freezing', icon: '❄️' },
   { key: 'drinking', label: 'Drinking', icon: '☕️' },
   { key: 'finished', label: 'Finished', icon: '✅' },
 ] as const;
 export type BeanStatus = (typeof STATUSES)[number]['key'];
 export const STATUS_KEYS = STATUSES.map((s) => s.key) as [BeanStatus, ...BeanStatus[]];
 /** Bags that still hold coffee you could brew. */
-export const LIVE_STATUSES: BeanStatus[] = ['received', 'freezing', 'resting', 'drinking'];
+export const LIVE_STATUSES: BeanStatus[] = ['resting', 'freezing', 'drinking'];
+export const statusOf = (k: string) => STATUSES.find((s) => s.key === k);
+/** "received" was retired in v0.3; old rows, backups and clients map to resting. */
+export const normalizeStatus = (v: unknown) => (v === 'received' ? 'resting' : v);
 
 export const EXTRACTION = [
   { key: 'under', label: 'Under', long: 'Underextracted', tone: 'warn', tip: 'Grind finer.' },

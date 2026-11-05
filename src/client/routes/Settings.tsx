@@ -88,6 +88,20 @@ export function Settings() {
         <InstallHint />
       </Section>
       <Backup />
+      <Section title="About">
+        <p className="sub" style={{ marginTop: 0 }}>
+          Ratio is a free, open-source coffee log. Built by{' '}
+          <a href="https://tylerclass.net" target="_blank" rel="noreferrer">
+            Tyler Class
+          </a>
+          .
+        </p>
+        <a className="kofi" href="https://ko-fi.com/tylerclass" target="_blank" rel="noreferrer">
+          <Icon name="coffee" size={18} />
+          <span>If you want to say thank you, coffee is my love language</span>
+          <Icon name="chevRight" size={16} />
+        </a>
+      </Section>
       <Section title="Account">
         <button
           type="button"
@@ -103,10 +117,6 @@ export function Settings() {
           Ratio {__APP_VERSION__} ·{' '}
           <a href="https://github.com/tyler-class/ratio" target="_blank" rel="noreferrer">
             GitHub
-          </a>{' '}
-          · Like it?{' '}
-          <a href="https://ko-fi.com/tylerclass" target="_blank" rel="noreferrer">
-            Buy me a coffee
           </a>
         </p>
       </Section>
