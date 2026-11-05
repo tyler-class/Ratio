@@ -191,12 +191,28 @@ export async function loadBrews(db: D1Database, id?: string): Promise<Brew[]> {
   ).map(toBrew);
 }
 
+/** Saved Insights layout; anything malformed is dropped so the client falls back to defaults. */
+function panels(v: string | undefined): Settings['insights_layout'] {
+  try {
+    const p: unknown = JSON.parse(v ?? '[]');
+    if (!Array.isArray(p)) return [];
+    return p.flatMap((x: { id?: unknown; size?: unknown; hidden?: unknown }) =>
+      typeof x?.id === 'string'
+        ? [{ id: x.id, size: x.size === 'half' ? 'half' : 'full', hidden: x.hidden === true }]
+        : [],
+    );
+  } catch {
+    return [];
+  }
+}
+
 export const DEFAULT_SETTINGS: Settings = {
   methods: DEFAULT_METHODS,
   grinders: [],
   temp_unit: 'F',
   currency: 'USD',
   time_zone: 'UTC',
+  insights_layout: [],
 };
 
 export async function loadSettings(db: D1Database): Promise<Settings> {
@@ -209,6 +225,7 @@ export async function loadSettings(db: D1Database): Promise<Settings> {
     temp_unit: (m.get('temp_unit') as TempUnit | undefined) ?? DEFAULT_SETTINGS.temp_unit,
     currency: m.get('currency') ?? DEFAULT_SETTINGS.currency,
     time_zone: m.get('time_zone') ?? DEFAULT_SETTINGS.time_zone,
+    insights_layout: panels(m.get('insights_layout')),
   };
 }
 

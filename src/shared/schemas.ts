@@ -43,6 +43,15 @@ export const settingsPatch = z
     temp_unit: z.enum(['F', 'C']),
     currency: z.string().regex(/^[A-Z]{3}$/, 'Use a 3-letter currency code like USD'),
     time_zone: z.string().min(1).max(64),
+    insights_layout: z
+      .array(
+        z.object({
+          id: z.string().min(1).max(40),
+          size: z.enum(['half', 'full']),
+          hidden: z.boolean(),
+        }),
+      )
+      .max(40),
   })
   .partial();
 

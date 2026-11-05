@@ -62,7 +62,14 @@ function brew(p: Partial<Brew>): Brew {
 }
 
 const state = (beans: Bean[], brews: Brew[]): AppState => ({
-  settings: { methods: [], grinders: [], temp_unit: 'F', currency: 'USD', time_zone: 'UTC' },
+  settings: {
+    methods: [],
+    grinders: [],
+    temp_unit: 'F',
+    currency: 'USD',
+    time_zone: 'UTC',
+    insights_layout: [],
+  },
   roasters: [
     {
       id: 'r1',

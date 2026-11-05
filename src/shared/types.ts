@@ -73,6 +73,14 @@ export interface Settings {
   currency: string;
   /** IANA zone the app last reported, so assistants see local dates and times. */
   time_zone: string;
+  /** Insights panel order, width and visibility. Unknown or missing panels use defaults. */
+  insights_layout: InsightsPanel[];
+}
+
+export interface InsightsPanel {
+  id: string;
+  size: 'half' | 'full';
+  hidden: boolean;
 }
 
 export interface AppState {

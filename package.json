@@ -1,6 +1,6 @@
 {
   "name": "ratio",
-  "version": "0.4.4",
+  "version": "0.5.0",
   "private": true,
   "description": "A coffee brewing log you host yourself on Cloudflare.",
   "license": "MIT",
@@ -37,6 +37,9 @@
   },
   "dependencies": {
     "@cloudflare/workers-oauth-provider": "1.2.3",
+    "@dnd-kit/core": "6.3.1",
+    "@dnd-kit/sortable": "10.0.0",
+    "@dnd-kit/utilities": "3.2.2",
     "@modelcontextprotocol/server": "2.3.1",
     "@tanstack/react-query": "5.104.5",
     "hono": "4.13.13",

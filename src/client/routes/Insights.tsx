@@ -4,7 +4,8 @@ import { daysBetween, MO, startOfDay } from '@shared/logic/dates';
 import { mean, streak } from '@shared/logic/model';
 import { fmtN, r1 } from '@shared/logic/units';
 import { money, money0 } from '../lib/format';
-import { useModel } from '../lib/queries';
+import { useActions, useModel } from '../lib/queries';
+import { PanelBoard, type PanelDef } from '../components/Panels';
 import {
   Columns,
   Heatmap,
@@ -29,6 +30,7 @@ const DIMS = [
 export function Insights() {
   const data = useModel();
   const sheets = useSheets();
+  const actions = useActions();
   const [dim, setDim] = useState<(typeof DIMS)[number][0]>('origin');
   const [minN, setMinN] = useState(3);
   const [rm, setRm] = useState<string | null>(null);
@@ -155,70 +157,69 @@ export function Insights() {
       </div>
     );
 
-  return (
-    <div>
-      <PageHeader title="Insights" icon="chart" />
-      <div className="stats" style={{ marginTop: 0 }}>
-        <Stat
-          v={m.brews.length}
-          l="Brews logged"
-          d={`${m.brews.filter((b) => daysBetween(b.date, now) <= 29).length} in 30 days`}
-        />
-        <Stat
-          v={avg != null ? fmtN(r1(avg)) : '–'}
-          l="Average rating"
-          d={`${rated.length} rated`}
-        />
-        <Stat v={`${st} ${st === 1 ? 'day' : 'days'}`} l="Brew streak" />
-        <Stat
-          v={m.beans.length}
-          l="Bags tried"
-          d={`${m.beans.filter((b) => b.status === 'finished').length} finished`}
-        />
-        <Stat
-          v={money0(spent, cur)}
-          l="Spent on beans"
-          d={cpc != null ? `${money(cpc, cur)} per cup` : undefined}
-        />
-        <Stat
-          v={m.runway != null ? `${Math.round(m.runway)} d` : '–'}
-          l="Runway"
-          d={`${Math.round(m.stock)} g, ${Math.round(m.burn)} g/day`}
-        />
-      </div>
-
-      <div className="sec">
-        <div className="sec-h">
-          <h2>Your coffee calendar</h2>
-          <span className="sub">last 26 weeks</span>
+  const panels: PanelDef[] = [
+    {
+      id: 'glance',
+      title: 'At a glance',
+      size: 'full',
+      body: (
+        <div className="stats">
+          <Stat
+            v={m.brews.length}
+            l="Brews logged"
+            d={`${m.brews.filter((b) => daysBetween(b.date, now) <= 29).length} in 30 days`}
+          />
+          <Stat
+            v={avg != null ? fmtN(r1(avg)) : '–'}
+            l="Average rating"
+            d={`${rated.length} rated`}
+          />
+          <Stat v={`${st} ${st === 1 ? 'day' : 'days'}`} l="Brew streak" />
+          <Stat
+            v={m.beans.length}
+            l="Bags tried"
+            d={`${m.beans.filter((b) => b.status === 'finished').length} finished`}
+          />
+          <Stat
+            v={money0(spent, cur)}
+            l="Spent on beans"
+            d={cpc != null ? `${money(cpc, cur)} per cup` : undefined}
+          />
+          <Stat
+            v={m.runway != null ? `${Math.round(m.runway)} d` : '–'}
+            l="Runway"
+            d={`${Math.round(m.stock)} g, ${Math.round(m.burn)} g/day`}
+          />
         </div>
-        <div className="card">
-          <Heatmap keys={m.brews.map((b) => b.key)} />
-        </div>
-      </div>
-
-      <div className="sec grid2">
-        <div className="card">
-          <h3>Brews per week</h3>
-          <div className="sub" style={{ marginBottom: 8 }}>
-            Last 12 weeks
-          </div>
-          <Columns data={weekly} />
-        </div>
-        <div className="card">
-          <h3>How you rate</h3>
-          <div className="sub" style={{ marginBottom: 8 }}>
-            Distribution of all rated brews
-          </div>
-          <Columns data={dist} />
-        </div>
-      </div>
-
-      <div className="sec">
-        <div className="sec-h">
-          <h2>Taste explorer</h2>
-        </div>
-        <div className="card">
+      ),
+    },
+    {
+      id: 'calendar',
+      title: 'Your coffee calendar',
+      sub: 'Last 26 weeks',
+      size: 'full',
+      body: <Heatmap keys={m.brews.map((b) => b.key)} />,
+    },
+    {
+      id: 'weekly',
+      title: 'Brews per week',
+      sub: 'Last 12 weeks',
+      size: 'half',
+      body: <Columns data={weekly} />,
+    },
+    {
+      id: 'ratings',
+      title: 'How you rate',
+      sub: 'Distribution of all rated brews',
+      size: 'half',
+      body: <Columns data={dist} />,
+    },
+    {
+      id: 'taste',
+      title: 'Taste explorer',
+      size: 'full',
+      body: (
+        <>
           <div className="flexrow" style={{ justifyContent: 'space-between', marginBottom: 14 }}>
             <div className="seg">
               {DIMS.map(([k, l]) => (
@@ -260,12 +261,15 @@ export function Insights() {
           ) : (
             <div className="empty">Not enough rated brews for that cut. Lower the minimum.</div>
           )}
-        </div>
-      </div>
-
-      <div className="sec grid2">
-        <div className="card">
-          <h3>Ratio vs rating</h3>
+        </>
+      ),
+    },
+    {
+      id: 'ratio',
+      title: 'Ratio vs rating',
+      size: 'half',
+      body: (
+        <>
           {methods.length > 1 && (
             <div className="seg" style={{ margin: '8px 0 10px' }}>
               {methods.map((o) => (
@@ -305,27 +309,32 @@ export function Insights() {
           ) : (
             <div className="empty">Rate a few more {ratioMethod ?? ''} brews to see this.</div>
           )}
-        </div>
-        <div className="card">
-          <h3>Dial-in accuracy</h3>
-          <div className="sub" style={{ marginBottom: 8 }}>
-            Extraction labels by month
-          </div>
+        </>
+      ),
+    },
+    {
+      id: 'dialin',
+      title: 'Dial-in accuracy',
+      sub: 'Extraction labels by month',
+      size: 'half',
+      body: (
+        <>
           {months.length ? (
             <StackedMonths data={months} />
           ) : (
             <div className="empty">Label extraction when rating to see this.</div>
           )}
           <Legend />
-        </div>
-      </div>
-
-      <div className="sec grid2">
-        <div className="card">
-          <h3>Top bags</h3>
-          <div className="sub" style={{ marginBottom: 12 }}>
-            Average brew rating, 2+ rated brews
-          </div>
+        </>
+      ),
+    },
+    {
+      id: 'top',
+      title: 'Top bags',
+      sub: 'Average brew rating, 2+ rated brews',
+      size: 'half',
+      body: (
+        <>
           {top.length ? (
             <Rank
               rows={top.slice(0, 8).map((b) => ({
@@ -341,12 +350,16 @@ export function Insights() {
           ) : (
             <div className="empty">Rate more brews.</div>
           )}
-        </div>
-        <div className="card">
-          <h3>Order Again Shortlist</h3>
-          <div className="sub" style={{ marginBottom: 12 }}>
-            Finished bags you would buy again
-          </div>
+        </>
+      ),
+    },
+    {
+      id: 'orderAgain',
+      title: 'Order Again Shortlist',
+      sub: 'Finished bags you would buy again',
+      size: 'half',
+      body: (
+        <>
           {reorder.length ? (
             reorder.slice(0, 8).map((b) => (
               <div className="ri" key={b.id}>
@@ -368,15 +381,16 @@ export function Insights() {
           ) : (
             <div className="empty">Mark finished bags as Yes or Definitely.</div>
           )}
-        </div>
-      </div>
-
-      <div className="sec grid2">
-        <div className="card">
-          <h3>Spend by roaster</h3>
-          <div className="sub" style={{ marginBottom: 12 }}>
-            Total across bags, with price per 100 g
-          </div>
+        </>
+      ),
+    },
+    {
+      id: 'spend',
+      title: 'Spend by roaster',
+      sub: 'Total across bags, with price per 100 g',
+      size: 'half',
+      body: (
+        <>
           {spendRows.length ? (
             <Rank
               rows={spendRows.slice(0, 8).map((r) => ({
@@ -391,12 +405,16 @@ export function Insights() {
           ) : (
             <div className="empty">No prices logged.</div>
           )}
-        </div>
-        <div className="card">
-          <h3>Recipe book</h3>
-          <div className="sub" style={{ marginBottom: 12 }}>
-            Your best-rated brews. Tap one to brew it again.
-          </div>
+        </>
+      ),
+    },
+    {
+      id: 'recipes',
+      title: 'Recipe book',
+      sub: 'Your best-rated brews. Tap one to brew it again.',
+      size: 'half',
+      body: (
+        <>
           {best.slice(0, 6).map((b) => (
             <div className="ri" key={b.id}>
               <button type="button" className="rm" onClick={() => sheets.log({ fromBrewId: b.id })}>
@@ -412,8 +430,19 @@ export function Insights() {
               </button>
             </div>
           ))}
-        </div>
-      </div>
+        </>
+      ),
+    },
+  ];
+
+  return (
+    <div>
+      <PageHeader title="Insights" icon="chart" />
+      <PanelBoard
+        defs={panels}
+        saved={state.settings.insights_layout}
+        onSave={(insights_layout) => void actions.saveSettings({ insights_layout })}
+      />
     </div>
   );
 }
