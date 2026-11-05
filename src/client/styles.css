@@ -30,8 +30,9 @@
   color-scheme: light;
 }
 
+/* Dark: follows the system unless Settings → Appearance picks one (data-theme on <html>). */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme='light']) {
     --bg: #150f0b;
     --surface: #201711;
     --surface2: #2c2018;
@@ -53,6 +54,28 @@
     --sh: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 28px rgba(0, 0, 0, 0.35);
     color-scheme: dark;
   }
+}
+:root[data-theme='dark'] {
+  --bg: #150f0b;
+  --surface: #201711;
+  --surface2: #2c2018;
+  --ink: #f4e9db;
+  --ink2: #b7a28d;
+  --line: #3b2c20;
+  --accent: #e0914f;
+  --accent-ink: #1b0f07;
+  --accent-soft: #3d2818;
+  --good: #92b87f;
+  --good-soft: #25301f;
+  --warn: #e3ae4f;
+  --warn-soft: #3a2d14;
+  --bad: #e07d6e;
+  --bad-soft: #3d1f1a;
+  --blue: #86b0cb;
+  --blue-soft: #1c2a33;
+  --scrim: rgb(0 0 0 / 0.6);
+  --sh: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 28px rgba(0, 0, 0, 0.35);
+  color-scheme: dark;
 }
 
 * {
@@ -283,8 +306,16 @@ h3,
   gap: 12px;
   padding: 8px 2px 16px;
 }
-.page-h h1 {
+.page-h h1,
+.page-t {
   font-size: 30px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.page-h h1 svg,
+.page-t svg {
+  color: var(--accent);
 }
 
 /* ---------- surfaces & text ---------- */

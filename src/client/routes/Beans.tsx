@@ -41,6 +41,7 @@ export function Beans() {
   const header = (
     <PageHeader
       title="Beans"
+      icon="bag"
       action={
         <button
           type="button"

@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { fmtN } from '@shared/logic/units';
 import type { Tone } from '@shared/lookups';
-import { Icon } from './Icon';
+import { Icon, type IconName } from './Icon';
 
 export function cx(...c: (string | false | null | undefined)[]) {
   return c.filter(Boolean).join(' ');
@@ -457,10 +457,21 @@ export function Sheet({
   );
 }
 
-export function PageHeader({ title, action }: { title: ReactNode; action?: ReactNode }) {
+export function PageHeader({
+  title,
+  icon,
+  action,
+}: {
+  title: ReactNode;
+  icon?: IconName;
+  action?: ReactNode;
+}) {
   return (
     <header className="page-h">
-      <h1>{title}</h1>
+      <h1>
+        {icon && <Icon name={icon} size={26} />}
+        {title}
+      </h1>
       {action}
     </header>
   );

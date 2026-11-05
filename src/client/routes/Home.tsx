@@ -59,7 +59,10 @@ export function Home() {
       <div className="card hero">
         <div>
           <div className="sub">{`${WD[now.getDay()]}, ${MO[now.getMonth()]} ${now.getDate()}`}</div>
-          <h1>{greet}</h1>
+          <h1 className="page-t">
+            <Icon name="home" size={26} />
+            {greet}
+          </h1>
           <div className="sub" style={{ marginTop: 4 }}>
             {today.length === 0
               ? 'Nothing brewed yet today.'

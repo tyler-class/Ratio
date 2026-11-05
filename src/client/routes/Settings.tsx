@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { DEFAULT_METHODS } from '@shared/lookups';
 import { api, errorMessage } from '../lib/api';
 import { useActions, useModel } from '../lib/queries';
+import { useTheme } from '../lib/theme';
 import { useToast } from '../components/Toast';
 import { Icon } from '../components/Icon';
 import { ConfirmButton, PageHeader, Seg, TagInput } from '../components/ui';
@@ -21,11 +22,12 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 export function Settings() {
   const data = useModel();
   const actions = useActions();
+  const [theme, setTheme] = useTheme();
   if (!data) return null;
   const s = data.state.settings;
   return (
     <div>
-      <PageHeader title="Settings" />
+      <PageHeader title="Settings" icon="settings" />
       <Section title="Equipment">
         <div className="fg">
           <label className="lbl">Brew methods</label>
@@ -62,6 +64,17 @@ export function Settings() {
             onChange={(grinders) => actions.saveSettings({ grinders })}
           />
         </div>
+      </Section>
+      <Section title="Appearance">
+        <Seg
+          opts={[
+            { key: 'light', label: 'Light' },
+            { key: 'dark', label: 'Dark' },
+            { key: 'system', label: 'System' },
+          ]}
+          value={theme}
+          onChange={(k) => k && setTheme(k)}
+        />
       </Section>
       <Section title="Units">
         <div className="fg">

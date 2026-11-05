@@ -38,7 +38,7 @@ export function Journal() {
   }
   return (
     <div>
-      <PageHeader title="Journal" />
+      <PageHeader title="Journal" icon="book" />
       <div className="flexrow">
         <input
           className="in search"

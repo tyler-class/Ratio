@@ -3,7 +3,7 @@ import { Icon, type IconName } from '../components/Icon';
 import { useSheets } from '../sheets/context';
 
 const TABS: [string, string, IconName][] = [
-  ['/', 'Brew', 'coffee'],
+  ['/', 'Home', 'home'],
   ['/journal', 'Journal', 'book'],
   ['/beans', 'Beans', 'bag'],
   ['/insights', 'Insights', 'chart'],

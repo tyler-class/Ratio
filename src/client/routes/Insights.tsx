@@ -150,14 +150,14 @@ export function Insights() {
   if (!m.brews.length)
     return (
       <div>
-        <PageHeader title="Insights" />
+        <PageHeader title="Insights" icon="chart" />
         <div className="card empty">Log and rate a few brews to see patterns here.</div>
       </div>
     );
 
   return (
     <div>
-      <PageHeader title="Insights" />
+      <PageHeader title="Insights" icon="chart" />
       <div className="stats" style={{ marginTop: 0 }}>
         <Stat
           v={m.brews.length}
