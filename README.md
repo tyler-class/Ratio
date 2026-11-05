@@ -8,7 +8,7 @@ A calm coffee brewing log you host yourself. Track the bags you buy, log every b
 - **Dial in.** Each bag shows how every grind setting rated, your best recipe, and last time’s “next time” note.
 - **Every bag, start to finish.** Ordered → resting or freezing → drinking → finished, with dates stamped as you go. See grams left, cups left, cost per cup, and how long your stock will last.
 - **Photos.** Snap the bag and the roaster’s logo. Images are resized on your phone and stored in your own R2 bucket.
-- **Insights.** A brewing calendar, ratings by origin, process, roaster, method or grinder, which ratios rate best, how your dial-in is trending, top bags, a reorder shortlist and spend by roaster.
+- **Insights.** A brewing calendar, ratings by origin, process, roaster, method or grinder, which ratios rate best, how your dial-in is trending, top bags, an order again shortlist and spend by roaster.
 - **AI assistants.** Connect Claude, ChatGPT or any MCP-capable assistant and talk to your log: “log a V60 of the Kenya, 8 out of 10, a bit sour”, “what grind worked best for the Hologram?”, “move the Gesha out of the freezer”.
 - **Built for phones.** Install it to your home screen. It works like an app, and the last-loaded log stays readable offline.
 - **Yours.** It runs on your own Cloudflare account. The free plan is plenty. Your data stays in your database.
@@ -50,18 +50,18 @@ Ratio includes an [MCP](https://modelcontextprotocol.io) server at `https://<you
 
 Assistants get these tools:
 
-| Tool                            | What it does                                                                              |
-| ------------------------------- | ----------------------------------------------------------------------------------------- |
-| `coffee_overview`               | What’s open, resting, frozen or coming; recent and unrated brews; stats; equipment; units |
-| `find_beans`, `get_bean`        | Search bags; one bag in full with dial-in table, best and last brew                       |
-| `list_brews`, `get_brew`        | Search the journal by bean, method, dates, rating or notes                                |
-| `log_brew`                      | Log a brew; anything not given is copied from that bag’s last brew                        |
-| `update_brew`, `delete_brew`    | Rate or fix a brew (“last”, “#392”); delete by number                                     |
-| `add_bean`, `update_bean`       | Add a bag (creating its roaster if new); move it along, mark buy-again, edit details      |
-| `list_roasters`, `save_roaster` | Roasters with bags, ratings and spend; add or edit one                                    |
-| `coffee_insights`               | Ratings by origin/process/roaster/method/grinder/variety, ratio sweet spots, reorder list |
-| `photo_upload_link`             | A one-time link (30 min) to take or pick a photo on your phone for a bag or logo          |
-| `add_photo`                     | Attach an image from a public URL (e.g. a roaster’s logo) or base64 data                  |
+| Tool                            | What it does                                                                                       |
+| ------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `coffee_overview`               | What’s open, resting, frozen or coming; recent and unrated brews; stats; equipment; units          |
+| `find_beans`, `get_bean`        | Search bags; one bag in full with dial-in table, best and last brew                                |
+| `list_brews`, `get_brew`        | Search the journal by bean, method, dates, rating or notes                                         |
+| `log_brew`                      | Log a brew; anything not given is copied from that bag’s last brew                                 |
+| `update_brew`, `delete_brew`    | Rate or fix a brew (“last”, “#392”); delete by number                                              |
+| `add_bean`, `update_bean`       | Add a bag (creating its roaster if new); move it along, mark buy-again, edit details               |
+| `list_roasters`, `save_roaster` | Roasters with bags, ratings and spend; add or edit one                                             |
+| `coffee_insights`               | Ratings by origin/process/roaster/method/grinder/variety, ratio sweet spots, order again shortlist |
+| `photo_upload_link`             | A one-time link (30 min) to take or pick a photo on your phone for a bag or logo                   |
+| `add_photo`                     | Attach an image from a public URL (e.g. a roaster’s logo) or base64 data                           |
 
 Assistants can’t pass a photo from the chat into a tool, so for “add this photo to the Sumatra” they give you an upload link to tap instead; the photo lands on the bag as soon as it uploads. Names can be loose (“the kenya”, “sey gachatha”); when a name is ambiguous the assistant is told the options. Times without an offset are read in your time zone, which the app reports automatically.
 

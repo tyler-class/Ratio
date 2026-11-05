@@ -343,7 +343,7 @@ export function Insights() {
           )}
         </div>
         <div className="card">
-          <h3>Reorder shortlist</h3>
+          <h3>Order Again Shortlist</h3>
           <div className="sub" style={{ marginBottom: 12 }}>
             Finished bags you would buy again
           </div>

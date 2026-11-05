@@ -549,7 +549,7 @@ function buildServer(call: Call) {
     {
       title: 'Coffee insights',
       description:
-        'Patterns across the log: average rating grouped by origin, process, roaster, method, grinder or variety; top-rated bags; the reorder shortlist (finished bags marked buy again); which brew ratios rate best per method; extraction trend; and spend by roaster. Optionally limit to the last N days.',
+        'Patterns across the log: average rating grouped by origin, process, roaster, method, grinder or variety; top-rated bags; the order again shortlist (finished bags marked buy again); which brew ratios rate best per method; extraction trend; and spend by roaster. Optionally limit to the last N days.',
       inputSchema: z.object({
         group_by: z
           .enum(['origin', 'process', 'roaster', 'method', 'grinder', 'variety'])
@@ -633,7 +633,7 @@ function buildServer(call: Call) {
             avg_rating: r1(b.avg!),
             brews: b.rated.length,
           })),
-        reorder_shortlist: c.m.beans
+        order_again_shortlist: c.m.beans
           .filter(
             (b) =>
               b.status === 'finished' && (b.buy_again === 'definitely' || b.buy_again === 'yes'),

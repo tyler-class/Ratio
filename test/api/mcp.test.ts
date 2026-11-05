@@ -293,11 +293,11 @@ describe('MCP', () => {
     expect(done.data.updated).toMatchObject({ status: 'finished', buy_again: 'Definitely' });
     expect(done.data.updated.finished_on).toMatch(/^\d{4}-\d{2}-\d{2}$/);
 
-    const ins = await tool<{ reorder_shortlist: { bean: string }[] }>(t, 'coffee_insights', {
+    const ins = await tool<{ order_again_shortlist: { bean: string }[] }>(t, 'coffee_insights', {
       group_by: 'origin',
       min_brews: 1,
     });
-    expect(ins.data.reorder_shortlist.map((b) => b.bean)).toContain('Kenya Gachatha AA');
+    expect(ins.data.order_again_shortlist.map((b) => b.bean)).toContain('Kenya Gachatha AA');
 
     // Photos: a link to tap on the phone, or an image from data.
     const link = await tool<{ link: string; for: string }>(t, 'photo_upload_link', {

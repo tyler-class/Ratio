@@ -5,7 +5,7 @@ import { useSheets } from '../sheets/context';
 const TABS: [string, string, IconName][] = [
   ['/', 'Home', 'home'],
   ['/journal', 'Journal', 'book'],
-  ['/beans', 'Beans', 'bag'],
+  ['/beans', 'Beans', 'bean'],
   ['/insights', 'Insights', 'chart'],
   ['/settings', 'Settings', 'settings'],
 ];
