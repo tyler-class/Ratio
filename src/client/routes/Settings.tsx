@@ -4,6 +4,7 @@ import { DEFAULT_METHODS } from '@shared/lookups';
 import { api, errorMessage } from '../lib/api';
 import { useActions, useModel } from '../lib/queries';
 import { useTheme } from '../lib/theme';
+import { useSheets } from '../sheets/context';
 import { useToast } from '../components/Toast';
 import { Icon } from '../components/Icon';
 import { ConfirmButton, PageHeader, Seg, TagInput } from '../components/ui';
@@ -23,11 +24,20 @@ export function Settings() {
   const data = useModel();
   const actions = useActions();
   const [theme, setTheme] = useTheme();
+  const sheets = useSheets();
   if (!data) return null;
   const s = data.state.settings;
   return (
     <div>
-      <PageHeader title="Settings" icon="settings" />
+      <PageHeader
+        title="Settings"
+        icon="settings"
+        action={
+          <button type="button" className="btn sm about-m" onClick={sheets.about}>
+            <Icon name="info" size={15} /> About Ratio
+          </button>
+        }
+      />
       <Section title="Equipment">
         <div className="fg">
           <label className="lbl">Brew methods</label>
@@ -101,20 +111,6 @@ export function Settings() {
         <InstallHint />
       </Section>
       <Backup />
-      <Section title="About">
-        <p className="sub" style={{ marginTop: 0 }}>
-          Ratio is a free, open-source coffee log. Built by{' '}
-          <a href="https://tylerclass.net" target="_blank" rel="noreferrer">
-            Tyler Class
-          </a>
-          .
-        </p>
-        <a className="kofi" href="https://ko-fi.com/tylerclass" target="_blank" rel="noreferrer">
-          <Icon name="coffee" size={18} />
-          <span>If you want to say thank you, coffee is my love language</span>
-          <Icon name="chevRight" size={16} />
-        </a>
-      </Section>
       <Section title="Account">
         <button
           type="button"
@@ -126,12 +122,6 @@ export function Settings() {
         >
           <Icon name="logout" size={16} /> Sign out
         </button>
-        <p className="sub" style={{ marginBottom: 0 }}>
-          Ratio {__APP_VERSION__} ·{' '}
-          <a href="https://github.com/tyler-class/ratio" target="_blank" rel="noreferrer">
-            GitHub
-          </a>
-        </p>
       </Section>
     </div>
   );

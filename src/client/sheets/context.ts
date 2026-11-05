@@ -12,6 +12,7 @@ export interface SheetApi {
   bean: (beanId: string) => void;
   beanForm: (beanId?: string) => void;
   roaster: (roasterId?: string) => void;
+  about: () => void;
   close: () => void;
 }
 
@@ -23,6 +24,7 @@ export const SheetCtx = createContext<SheetApi>({
   bean: noop,
   beanForm: noop,
   roaster: noop,
+  about: noop,
   close: noop,
 });
 

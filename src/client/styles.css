@@ -264,21 +264,25 @@ h3,
     background: var(--accent-soft);
     color: var(--accent);
   }
-  .side-foot {
+  .side-about {
     margin-top: auto;
-    padding: 0 12px;
-    font-size: 12px;
-    color: var(--ink2);
     display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-  .side-foot a {
-    color: var(--ink2);
-    display: inline-flex;
-    gap: 6px;
     align-items: center;
-    text-decoration: none;
+    gap: 12px;
+    padding: 10px 14px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--ink2);
+    font-weight: 600;
+    font-size: 14px;
+    text-align: left;
+  }
+  .side-about:hover {
+    background: color-mix(in srgb, var(--line) 60%, transparent);
+  }
+  .about-m {
+    display: none;
   }
 }
 
@@ -1305,23 +1309,23 @@ textarea.in {
     opacity: 1;
   }
 }
-.kofi {
+.link-row {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 0 2px;
+  padding: 13px 0;
   border-top: 1px solid var(--line);
   color: var(--ink);
   text-decoration: none;
 }
-.kofi svg:first-child {
+.link-row svg:first-child {
   color: var(--accent);
   flex: none;
 }
-.kofi span {
+.link-row span {
   flex: 1;
 }
-.kofi svg:last-child {
+.link-row svg:last-child {
   color: var(--ink2);
   flex: none;
 }

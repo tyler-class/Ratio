@@ -48,12 +48,9 @@ export function Layout() {
           <Icon name="plus" size={18} /> Log a brew
         </button>
         <nav aria-label="Main">{TABS.map(tab)}</nav>
-        <div className="side-foot">
-          <a href="https://github.com/tyler-class/ratio" target="_blank" rel="noreferrer">
-            <Icon name="github" size={15} /> Ratio on GitHub
-          </a>
-          <span>Ratio {__APP_VERSION__}</span>
-        </div>
+        <button type="button" className="side-about" onClick={sheets.about}>
+          <Icon name="info" size={18} /> About Ratio
+        </button>
       </aside>
       <main className="main">
         <Outlet />

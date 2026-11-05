@@ -1,6 +1,7 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { useModel } from '../lib/queries';
 import { BeanForm, BeanSheet, RoasterSheet } from './BeanSheets';
+import { AboutSheet } from './AboutSheet';
 import { BrewSheet, RateSheet } from './BrewSheet';
 import { SheetCtx, type LogPrefill, type SheetApi } from './context';
 
@@ -10,7 +11,8 @@ type Open =
   | { type: 'rate'; id: string }
   | { type: 'bean'; id: string }
   | { type: 'beanForm'; id?: string; n: number }
-  | { type: 'roaster'; id?: string; n: number };
+  | { type: 'roaster'; id?: string; n: number }
+  | { type: 'about' };
 
 /** One sheet at a time, reachable from anywhere through useSheets(). */
 export function SheetProvider({ children }: { children: ReactNode }) {
@@ -25,11 +27,12 @@ export function SheetProvider({ children }: { children: ReactNode }) {
       bean: (id) => setOpen({ type: 'bean', id }),
       beanForm: (id) => setOpen({ type: 'beanForm', id, n: ++n }),
       roaster: (id) => setOpen({ type: 'roaster', id, n: ++n }),
+      about: () => setOpen({ type: 'about' }),
       close: () => setOpen(null),
     };
   }, []);
 
-  let sheet: ReactNode = null;
+  let sheet: ReactNode = open?.type === 'about' ? <AboutSheet /> : null;
   if (open && data) {
     const { m, state } = data;
     const s = state.settings;
