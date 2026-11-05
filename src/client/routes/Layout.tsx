@@ -1,0 +1,69 @@
+import { NavLink, Outlet, useLocation } from 'react-router';
+import { Icon, type IconName } from '../components/Icon';
+import { useSheets } from '../sheets/context';
+
+const TABS: [string, string, IconName][] = [
+  ['/', 'Brew', 'coffee'],
+  ['/journal', 'Journal', 'book'],
+  ['/beans', 'Beans', 'bag'],
+  ['/insights', 'Insights', 'chart'],
+  ['/settings', 'Settings', 'settings'],
+];
+
+function activeTab(path: string): string {
+  for (const [p] of TABS.slice(1)) if (path.startsWith(p)) return p;
+  return '/';
+}
+
+export function Brand() {
+  return (
+    <div className="brand serif">
+      <span className="logo">
+        <Icon name="coffee" size={21} strokeWidth={2} />
+      </span>
+      Ratio
+    </div>
+  );
+}
+
+/**
+ * Phones (and the installed app): tabs along the bottom, a floating Log button, and a
+ * solid band under the status bar. 768px and up: a sidebar with the same tabs.
+ */
+export function Layout() {
+  const active = activeTab(useLocation().pathname);
+  const sheets = useSheets();
+  const tab = ([to, label, icon]: (typeof TABS)[number]) => (
+    <NavLink key={to} to={to} aria-current={active === to ? 'page' : undefined}>
+      <Icon name={icon} size={20} />
+      {label}
+    </NavLink>
+  );
+  return (
+    <div className="shell">
+      <div className="statusband" aria-hidden />
+      <aside className="side">
+        <Brand />
+        <button type="button" className="btn primary" onClick={() => sheets.log()}>
+          <Icon name="plus" size={18} /> Log a brew
+        </button>
+        <nav aria-label="Main">{TABS.map(tab)}</nav>
+        <div className="side-foot">
+          <a href="https://github.com/tyler-class/ratio" target="_blank" rel="noreferrer">
+            <Icon name="github" size={15} /> Ratio on GitHub
+          </a>
+          <span>Ratio {__APP_VERSION__}</span>
+        </div>
+      </aside>
+      <main className="main">
+        <Outlet />
+      </main>
+      <button type="button" className="fab" aria-label="Log a brew" onClick={() => sheets.log()}>
+        <Icon name="plus" size={28} strokeWidth={2} />
+      </button>
+      <nav className="tabbar" aria-label="Main">
+        <div className="tabbar-in">{TABS.map(tab)}</div>
+      </nav>
+    </div>
+  );
+}
