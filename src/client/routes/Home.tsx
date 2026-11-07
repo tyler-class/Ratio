@@ -164,10 +164,6 @@ export function Home() {
                 b.roasterName,
               );
             })}
-            {incoming.map((b) => {
-              const st = STATUSES.find((x) => x.key === b.status)!;
-              return upRow(b.id, st.icon, b.name, st.label, b.roasterName);
-            })}
             {freezer.length > 0 && (
               <div className="ri">
                 <Link
@@ -187,6 +183,10 @@ export function Home() {
                 </Link>
               </div>
             )}
+            {incoming.map((b) => {
+              const st = STATUSES.find((x) => x.key === b.status)!;
+              return upRow(b.id, st.icon, b.name, st.label, b.roasterName);
+            })}
           </div>
         </div>
       )}
