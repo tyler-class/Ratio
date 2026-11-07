@@ -1,8 +1,8 @@
 import { QueryClient, QueryClientProvider, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router';
-import { registerSW } from 'virtual:pwa-register';
 import { api, ApiError, onUnauthorized } from './lib/api';
+import { startPwa } from './lib/pwa';
 import { keys, useActions, useAppState } from './lib/queries';
 import { ToastProvider } from './components/Toast';
 import { SheetProvider } from './sheets/Sheets';
@@ -23,7 +23,7 @@ const queryClient = new QueryClient({
   },
 });
 
-registerSW({ immediate: true });
+startPwa();
 
 const router = createBrowserRouter([
   {
