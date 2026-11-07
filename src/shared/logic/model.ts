@@ -47,6 +47,8 @@ export interface Model {
   runway: number | null;
   /** Typical dose lately, for "cups left" estimates. */
   avgDose: number;
+  /** Average dose over the last 7 days (falls back to avgDose), for "brews left" estimates. */
+  dose7d: number;
 }
 
 export const mean = (a: number[]) => (a.length ? a.reduce((x, y) => x + y, 0) / a.length : null);
@@ -138,6 +140,10 @@ export function buildModel(state: AppState, now = new Date()): Model {
     burn,
     runway: burn > 0 ? stock / burn : null,
     avgDose: mean(recentDoses) ?? 20,
+    dose7d:
+      mean(brews.filter((b) => b.dose_g && daysBetween(b.date, now) <= 6).map((b) => b.dose_g!)) ??
+      mean(recentDoses) ??
+      20,
   };
 }
 

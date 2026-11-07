@@ -7,11 +7,11 @@ import { Thumb } from './Photos';
 import { RB } from './ui';
 
 export function stockLine(b: BeanView, m: Model, now = new Date()): string {
-  const cups = b.remaining != null ? Math.floor(b.remaining / m.avgDose) : null;
+  const left = b.remaining != null ? Math.floor(b.remaining / m.dose7d) : null;
   switch (b.status) {
     case 'drinking':
       return b.remaining != null
-        ? `${Math.round(b.remaining)} g left${cups != null ? ` · ~${cups} cups` : ''}`
+        ? `${Math.round(b.remaining)} g left${left != null ? ` · ~${left} ${left === 1 ? 'brew' : 'brews'}` : ''}`
         : 'Open';
     case 'resting': {
       if (!b.rest_until) return 'Resting';
@@ -56,7 +56,7 @@ export function BeanCard({ b, m }: { b: BeanView; m: Model }) {
       </div>
       {live && b.pct != null && (
         <div className="bar">
-          <i style={{ width: `${Math.round((1 - b.pct) * 100)}%` }} />
+          <i style={{ width: `${Math.round(b.pct * 100)}%` }} />
         </div>
       )}
       <div className="meta">

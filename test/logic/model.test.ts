@@ -116,6 +116,23 @@ describe('buildModel', () => {
     expect(m.brews[0]!.cup).toBeCloseTo(2);
   });
 
+  it('estimates brews left from the last 7 days of doses', () => {
+    const d = buildModel(
+      state(
+        [bean({})],
+        [
+          brew({ brewed_at: ago(0), dose_g: 18 }),
+          brew({ brewed_at: ago(3), dose_g: 22 }),
+          brew({ brewed_at: ago(10), dose_g: 40 }),
+        ],
+      ),
+      NOW,
+    );
+    expect(d.dose7d).toBe(20);
+    const none = buildModel(state([bean({})], [brew({ brewed_at: ago(10), dose_g: 15 })]), NOW);
+    expect(none.dose7d).toBe(15);
+  });
+
   it('works out burn rate and runway from live bags only', () => {
     // Live: Kenya 190 g left + Frozen 300 g. Finished bags don't count.
     expect(m.stock).toBe(490);

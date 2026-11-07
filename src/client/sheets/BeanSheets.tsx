@@ -34,7 +34,7 @@ export function BeanSheet({ m, s, beanId }: { m: Model; s: Settings; beanId: str
   const [notes, setNotes] = useState(b?.notes ?? '');
   if (!b) return null;
   const now = new Date();
-  const cups = b.remaining != null ? Math.floor(b.remaining / m.avgDose) : null;
+  const left = b.remaining != null ? Math.floor(b.remaining / m.dose7d) : null;
   const setStatus = async (k: BeanStatus | null) => {
     if (!k || k === b.status) return;
     const row = await actions.beans.update(b.id, { status: k });
@@ -102,7 +102,7 @@ export function BeanSheet({ m, s, beanId }: { m: Model; s: Settings; beanId: str
           l="Used"
           d={
             b.remaining != null
-              ? `${Math.round(b.remaining)} g left${cups != null ? ` · ~${cups} cups` : ''}`
+              ? `${Math.round(b.remaining)} g left${left != null ? ` · ~${left} ${left === 1 ? 'brew' : 'brews'}` : ''}`
               : undefined
           }
         />

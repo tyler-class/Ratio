@@ -163,9 +163,9 @@ function brewOut(b: BrewView, c: Ctx, full = false) {
 
 function stockLine(b: BeanView, c: Ctx): string {
   if (b.status === 'drinking') {
-    const cups = b.remaining != null ? Math.floor(b.remaining / c.m.avgDose) : null;
+    const left = b.remaining != null ? Math.floor(b.remaining / c.m.dose7d) : null;
     return b.remaining != null
-      ? `${Math.round(b.remaining)} g left${cups != null ? ` (~${cups} cups)` : ''}`
+      ? `${Math.round(b.remaining)} g left${left != null ? ` (~${left} brews at your 7-day average dose)` : ''}`
       : 'open';
   }
   if (b.status === 'resting') {
