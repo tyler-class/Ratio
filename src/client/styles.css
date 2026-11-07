@@ -828,20 +828,20 @@ textarea.in {
   color: var(--ink2);
 }
 .rb-low {
-  background: var(--bad-soft);
-  color: var(--bad);
+  background: var(--surface2);
+  color: var(--ink2);
 }
 .rb-mid {
   background: var(--warn-soft);
   color: var(--warn);
 }
 .rb-high {
-  background: var(--good-soft);
-  color: var(--good);
+  background: var(--accent-soft);
+  color: var(--accent);
 }
 .rb-top {
-  background: var(--accent);
-  color: var(--accent-ink);
+  background: var(--good);
+  color: var(--surface);
 }
 .ri {
   border-top: 1px solid var(--line);

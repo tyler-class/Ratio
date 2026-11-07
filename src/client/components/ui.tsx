@@ -7,10 +7,10 @@ export function cx(...c: (string | false | null | undefined)[]) {
   return c.filter(Boolean).join(' ');
 }
 
-/** Rating badge, colored by band. */
+/** Rating badge, colored by band: 5 and under grey, then yellow, orange, and green at the top. */
 export function RB({ v, big }: { v: number | null | undefined; big?: boolean }) {
   if (v == null) return <span className={cx('rb rb-none', big && 'big')}>–</span>;
-  const c = v >= 8.5 ? 'top' : v >= 7 ? 'high' : v >= 5 ? 'mid' : 'low';
+  const c = v >= 8.5 ? 'top' : v >= 7 ? 'high' : v > 5 ? 'mid' : 'low';
   return <span className={cx('rb', 'rb-' + c, big && 'big')}>{fmtN(v)}</span>;
 }
 
