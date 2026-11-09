@@ -1,4 +1,3 @@
-import { useEffect, useRef } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router';
 import { Icon, type IconName } from '../components/Icon';
 import { useSheets } from '../sheets/context';
@@ -45,11 +44,6 @@ export function Layout() {
   const active = activeTab(pathname);
   useTabSwipe(TAB_PATHS, tabRoot(pathname));
   const sheets = useSheets();
-  // A new page starts at the top (the browser did this when the whole document scrolled).
-  const scroller = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    scroller.current?.scrollTo(0, 0);
-  }, [pathname]);
   const tab = ([to, label, icon]: (typeof TABS)[number]) => (
     <NavLink key={to} to={to} aria-current={active === to ? 'page' : undefined}>
       <Icon name={icon} size={20} />
@@ -73,11 +67,9 @@ export function Layout() {
       <header className="appbar">
         <Brand />
       </header>
-      <div className="scroll" ref={scroller}>
-        <main className="main">
-          <Outlet />
-        </main>
-      </div>
+      <main className="main">
+        <Outlet />
+      </main>
       <button type="button" className="fab" aria-label="Log a brew" onClick={() => sheets.log()}>
         <Icon name="plus" size={28} strokeWidth={2} />
       </button>
