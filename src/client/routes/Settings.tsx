@@ -260,7 +260,7 @@ function ConnectAI() {
       {list.map((c) => (
         <div className="ri" key={c.id}>
           <div className="rm">
-            <Icon name="ai" size={18} />
+            <Icon name="sparkle" size={18} />
             <div className="mid">{c.name}</div>
             {c.created_at && (
               <span className="sub">{new Date(c.created_at).toLocaleDateString()}</span>
