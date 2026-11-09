@@ -1590,3 +1590,28 @@ textarea.in {
   font-size: 13px;
   color: var(--ink2);
 }
+
+/* A heading that folds a block open and closed (Settings → Example prompts). */
+.fold {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 16px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.fold-chev {
+  display: inline-flex;
+  color: var(--ink2);
+  transform: rotate(-90deg);
+  transition: transform 0.15s;
+}
+.fold-chev.open {
+  transform: none;
+}

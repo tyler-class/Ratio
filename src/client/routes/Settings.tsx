@@ -11,6 +11,7 @@ import { Icon } from '../components/Icon';
 import { ConfirmButton, InfoTip, PageHeader, Seg, Switch, TagInput } from '../components/ui';
 import { isSourceRepo, runUrl, setupUrl, UPSTREAM, useLatestVersion } from '../lib/updates';
 import { howUpdatesWork, UPDATE_TEXT, updateStatus, whatsShared } from '../kit/updates';
+import { assistants, ASSISTANT_INTRO, CONNECTED_TEXT, signInNote } from '../kit/assistants';
 
 /** What the usage counts count, in words (matches USAGE_TABLES in the worker). */
 const USAGE_COUNTED = 'roasters, beans, brews and photos';
@@ -196,9 +197,13 @@ const codeStyle = {
   minWidth: 0,
 };
 
+/** “Connect an AI assistant” (Selfhost Kit layout: src/client/kit/assistants.ts). */
 function ConnectAI() {
   const url = `${window.location.origin}/mcp`;
-  const cli = `claude mcp add --transport http ratio ${url}`;
+  const setups = assistants('Ratio', 'ratio', url);
+  const [open, setOpen] = useState<string | null>(null);
+  const [examples, setExamples] = useState(false);
+  const shown = setups.find((a) => a.id === open);
   const qc = useQueryClient();
   const toast = useToast();
   const q = useQuery({
@@ -211,61 +216,18 @@ function ConnectAI() {
   const list = q.data?.connections ?? [];
   return (
     <Section title="Connect an AI assistant">
-      <p style={{ marginTop: 0 }}>
-        Let Claude, ChatGPT or any assistant that supports MCP read your log and log, rate and
-        update brews, bags and roasters for you.
-      </p>
-      <label className="lbl">Your connector URL</label>
+      <p style={{ marginTop: 0 }}>{ASSISTANT_INTRO('coffee log')}</p>
+      <label className="lbl">{CONNECTED_TEXT.urlLabel('Ratio')}</label>
       <div className="flexrow" style={{ flexWrap: 'nowrap' }}>
         <code style={codeStyle}>{url}</code>
         <Copy text={url} />
       </div>
-      <div className="callout" style={{ margin: '14px 0' }}>
-        When you connect, a Ratio sign-in page opens. Enter your Ratio password there to approve the
-        assistant.
-      </div>
-      <h3 style={{ fontSize: 16, marginTop: 16 }}>Claude (web, desktop, mobile)</h3>
-      <ol className="sub" style={{ paddingLeft: 20 }}>
-        <li>Open Settings → Connectors and choose “Add custom connector”.</li>
-        <li>Name it Ratio and paste the URL above.</li>
-        <li>Choose Connect, then enter your password on the Ratio page.</li>
-      </ol>
-      <h3 style={{ fontSize: 16 }}>ChatGPT</h3>
-      <ol className="sub" style={{ paddingLeft: 20 }}>
-        <li>
-          In Settings, add a custom connector (MCP server). Your plan may need developer mode.
-        </li>
-        <li>Paste the URL above and choose OAuth sign-in.</li>
-      </ol>
-      <h3 style={{ fontSize: 16 }}>Claude Code</h3>
-      <div className="flexrow" style={{ flexWrap: 'nowrap' }}>
-        <code style={codeStyle}>{cli}</code>
-        <Copy text={cli} />
-      </div>
-      <p className="sub">
-        Then run /mcp in Claude Code and choose Authenticate. Other MCP apps: add a remote (HTTP)
-        server with the URL above.
+      <p className="sub" style={{ marginTop: 8 }}>
+        {signInNote('Ratio')}
       </p>
-      <h3 style={{ fontSize: 16 }}>Try asking</h3>
-      <ul className="try-list">
-        {EXAMPLE_PROMPTS.slice(0, 6).map((e) => (
-          <li key={e.prompt}>
-            <button
-              type="button"
-              title="Copy"
-              onClick={() =>
-                void navigator.clipboard?.writeText(e.prompt).then(() => toast({ text: 'Copied.' }))
-              }
-            >
-              “{e.prompt}”
-            </button>
-          </li>
-        ))}
-      </ul>
-      <p className="sub">Claude also lists ready-made Ratio prompts in its + menu.</p>
-      <h3 style={{ fontSize: 16 }}>Connected</h3>
+      <h3 style={{ fontSize: 16, marginTop: 16 }}>{CONNECTED_TEXT.heading}</h3>
       {q.isPending && <p className="sub">Loading…</p>}
-      {!q.isPending && !list.length && <p className="sub">No assistants are connected.</p>}
+      {!q.isPending && !list.length && <p className="sub">{CONNECTED_TEXT.none}</p>}
       {list.map((c) => (
         <div className="ri" key={c.id}>
           <div className="rm">
@@ -279,7 +241,7 @@ function ConnectAI() {
       ))}
       {list.length > 0 && (
         <ConfirmButton
-          confirm="Tap again to disconnect all"
+          confirm={CONNECTED_TEXT.confirm}
           onConfirm={async () => {
             try {
               await api.post('/connections/revoke-all');
@@ -289,8 +251,76 @@ function ConnectAI() {
             }
           }}
         >
-          Disconnect all
+          {CONNECTED_TEXT.disconnectAll}
         </ConfirmButton>
+      )}
+      <h3 style={{ fontSize: 16, marginTop: 16 }}>{CONNECTED_TEXT.setUp}</h3>
+      <div className="flexrow" style={{ gap: 6 }}>
+        {setups.map((a) => (
+          <button
+            key={a.id}
+            type="button"
+            className="chip"
+            aria-pressed={open === a.id}
+            onClick={() => setOpen(open === a.id ? null : a.id)}
+          >
+            {a.name}
+          </button>
+        ))}
+      </div>
+      {shown && (
+        <div style={{ marginTop: 10 }}>
+          {shown.steps.length > 0 && (
+            <ol className="sub" style={{ paddingLeft: 20, margin: 0 }}>
+              {shown.steps.map((t) => (
+                <li key={t}>{t}</li>
+              ))}
+            </ol>
+          )}
+          {shown.command && (
+            <div className="flexrow" style={{ flexWrap: 'nowrap' }}>
+              <code style={codeStyle}>{shown.command}</code>
+              <Copy text={shown.command} />
+            </div>
+          )}
+          {shown.after && <p className="sub">{shown.after}</p>}
+        </div>
+      )}
+      <button
+        type="button"
+        className="fold"
+        aria-expanded={examples}
+        onClick={() => setExamples((v) => !v)}
+      >
+        {CONNECTED_TEXT.examples}
+        <span className={examples ? 'fold-chev open' : 'fold-chev'}>
+          <Icon name="chevDown" size={14} />
+        </span>
+      </button>
+      {examples && (
+        <>
+          <p className="sub" style={{ marginTop: 0 }}>
+            {CONNECTED_TEXT.examplesHint}
+          </p>
+          <ul className="try-list">
+            {EXAMPLE_PROMPTS.slice(0, 6).map((e) => (
+              <li key={e.prompt}>
+                <button
+                  type="button"
+                  title="Copy"
+                  onClick={() =>
+                    void navigator.clipboard
+                      ?.writeText(e.prompt)
+                      .then(() => toast({ text: 'Copied.' }))
+                  }
+                >
+                  “{e.prompt}”
+                </button>
+              </li>
+            ))}
+          </ul>
+          <p className="sub">Claude also lists ready-made Ratio prompts in its + menu.</p>
+        </>
       )}
     </Section>
   );
