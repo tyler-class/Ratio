@@ -265,9 +265,10 @@ h3,
   .side nav a:hover {
     background: color-mix(in srgb, var(--line) 60%, transparent);
   }
+  /* The current page: a solid pill, so it stands out from the sidebar in light and dark. */
   .side nav a[aria-current='page'] {
-    background: var(--accent-soft);
-    color: var(--accent);
+    background: var(--accent);
+    color: var(--accent-ink);
   }
   .side-about {
     margin-top: auto;
