@@ -13,7 +13,6 @@ import {
   ConfirmButton,
   InfoTip,
   PageHeader,
-  Seg,
   SlideToggle,
   Select,
   Switch,
@@ -89,13 +88,15 @@ export function Settings() {
       <Section title="Units">
         <div className="fg">
           <label className="lbl">Water temperature</label>
-          <Seg
-            opts={[
-              { key: 'F', label: '°F' },
-              { key: 'C', label: '°C' },
-            ]}
+          <SlideToggle
+            label="Water temperature"
+            className="fit"
             value={s.temp_unit}
-            onChange={(k) => k && actions.saveSettings({ temp_unit: k })}
+            options={[
+              ['F', '°F'],
+              ['C', '°C'],
+            ]}
+            onChange={(temp_unit) => actions.saveSettings({ temp_unit })}
           />
         </div>
         <div>
@@ -283,19 +284,13 @@ function ConnectAI() {
         </ConfirmButton>
       )}
       <h3 style={{ fontSize: 16, marginTop: 16 }}>{CONNECTED_TEXT.setUp}</h3>
-      <div className="flexrow" style={{ gap: 6 }}>
-        {setups.map((a) => (
-          <button
-            key={a.id}
-            type="button"
-            className="chip"
-            aria-pressed={open === a.id}
-            onClick={() => setOpen(open === a.id ? null : a.id)}
-          >
-            {a.name}
-          </button>
-        ))}
-      </div>
+      <SlideToggle
+        label="AI assistant"
+        value={open}
+        allowClear
+        onChange={setOpen}
+        options={setups.map((a) => [a.id, a.name] as const)}
+      />
       {shown && (
         <div style={{ marginTop: 10 }}>
           {shown.steps.length > 0 && (

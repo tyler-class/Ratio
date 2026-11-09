@@ -15,7 +15,15 @@ import type { Settings } from '@shared/types';
 import { ellipsis, numStr, parseNum } from '../lib/format';
 import { useActions } from '../lib/queries';
 import { useToast } from '../components/Toast';
-import { ChoiceInput, ConfirmButton, Field, RB, Select, Seg, Sheet } from '../components/ui';
+import {
+  ChoiceInput,
+  ConfirmButton,
+  Field,
+  RB,
+  Select,
+  Sheet,
+  SlideToggle,
+} from '../components/ui';
 import { useSheets, type LogPrefill } from './context';
 
 export interface RateValues {
@@ -67,15 +75,22 @@ export function RateFields({ v, set }: { v: RateValues; set: (p: Partial<RateVal
         </div>
       </Field>
       <Field label="Extraction">
-        <Seg
-          opts={EXTRACTION}
+        <SlideToggle
+          label="Extraction"
           value={v.extraction}
           allowClear
-          onChange={(k) => set({ extraction: k })}
+          options={EXTRACTION.map((e) => [e.key, e.label] as const)}
+          onChange={(extraction) => set({ extraction })}
         />
       </Field>
       <Field label="Strength">
-        <Seg opts={STRENGTH} value={v.strength} allowClear onChange={(k) => set({ strength: k })} />
+        <SlideToggle
+          label="Strength"
+          value={v.strength}
+          allowClear
+          options={STRENGTH.map((e) => [e.key, e.label] as const)}
+          onChange={(strength) => set({ strength })}
+        />
       </Field>
       <Field label="Tasting notes">
         <textarea

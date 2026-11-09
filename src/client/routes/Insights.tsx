@@ -16,7 +16,7 @@ import {
   type Col,
   type MonthMix,
 } from '../components/charts';
-import { PageHeader, RB, Stat } from '../components/ui';
+import { PageHeader, RB, SlideToggle, Stat } from '../components/ui';
 import { useSheets } from '../sheets/context';
 
 const DIMS = [
@@ -220,33 +220,24 @@ export function Insights() {
       size: 'full',
       body: (
         <>
-          <div className="flexrow" style={{ justifyContent: 'space-between', marginBottom: 14 }}>
-            <div className="seg">
-              {DIMS.map(([k, l]) => (
-                <button
-                  key={k}
-                  type="button"
-                  className="chip sm"
-                  aria-pressed={dim === k}
-                  onClick={() => setDim(k)}
-                >
-                  {l}
-                </button>
-              ))}
-            </div>
-            <div className="seg">
-              {[1, 3, 5, 10].map((n) => (
-                <button
-                  key={n}
-                  type="button"
-                  className="chip sm"
-                  aria-pressed={minN === n}
-                  onClick={() => setMinN(n)}
-                >
-                  {n}+ brews
-                </button>
-              ))}
-            </div>
+          <div
+            className="flexrow"
+            style={{ justifyContent: 'space-between', marginBottom: 14, flexWrap: 'wrap' }}
+          >
+            <SlideToggle
+              label="Group by"
+              className="fit"
+              value={dim}
+              options={DIMS}
+              onChange={setDim}
+            />
+            <SlideToggle
+              label="Minimum brews"
+              className="fit"
+              value={String(minN)}
+              options={[1, 3, 5, 10].map((n) => [String(n), `${n}+ brews`] as const)}
+              onChange={(n) => setMinN(Number(n))}
+            />
           </div>
           {taste.length ? (
             <Rank
@@ -271,18 +262,14 @@ export function Insights() {
       body: (
         <>
           {methods.length > 1 && (
-            <div className="seg" style={{ margin: '8px 0 10px' }}>
-              {methods.map((o) => (
-                <button
-                  key={o}
-                  type="button"
-                  className="chip sm"
-                  aria-pressed={ratioMethod === o}
-                  onClick={() => setRm(o)}
-                >
-                  {o}
-                </button>
-              ))}
+            <div style={{ margin: '8px 0 10px' }}>
+              <SlideToggle
+                label="Method"
+                className="fit"
+                value={ratioMethod}
+                options={methods.map((o) => [o, o] as const)}
+                onChange={setRm}
+              />
             </div>
           )}
           {ratioPts.length >= 3 ? (

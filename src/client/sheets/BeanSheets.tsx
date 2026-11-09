@@ -22,10 +22,19 @@ import { useToast } from '../components/Toast';
 import { Legend, Scatter } from '../components/charts';
 import { Photos } from '../components/Photos';
 import { flags } from '../components/BeanCard';
-import { ChoiceInput, ConfirmButton, Field, RB, Select, Seg, Sheet, Stat } from '../components/ui';
+import {
+  ChoiceInput,
+  ConfirmButton,
+  Field,
+  RB,
+  Select,
+  Sheet,
+  SlideToggle,
+  Stat,
+} from '../components/ui';
 import { useSheets } from './context';
 
-const statusOpts = STATUSES.map((s) => ({ key: s.key, label: `${s.icon} ${s.label}` }));
+const statusOpts = STATUSES.map((s) => [s.key, `${s.icon} ${s.label}`] as const);
 
 export function BeanSheet({ m, s, beanId }: { m: Model; s: Settings; beanId: string }) {
   const b = m.beanMap.get(beanId);
@@ -80,15 +89,16 @@ export function BeanSheet({ m, s, beanId }: { m: Model; s: Settings; beanId: str
       }
     >
       <Field label="Status">
-        <Seg opts={statusOpts} value={b.status} onChange={setStatus} />
+        <SlideToggle label="Status" value={b.status} options={statusOpts} onChange={setStatus} />
       </Field>
       {b.status === 'finished' && (
         <Field label="Would you buy it again?">
-          <Seg
-            opts={BUY_AGAIN}
+          <SlideToggle
+            label="Would you buy it again?"
             value={b.buy_again}
             allowClear
-            onChange={(k) => actions.beans.update(b.id, { buy_again: k })}
+            options={BUY_AGAIN.map((o) => [o.key, o.label] as const)}
+            onChange={(buy_again) => actions.beans.update(b.id, { buy_again })}
           />
         </Field>
       )}
@@ -351,7 +361,12 @@ export function BeanForm({ m, s, beanId }: { m: Model; s: Settings; beanId?: str
         )}
       </Field>
       <Field label="Status">
-        <Seg opts={statusOpts} value={f.status} onChange={(k) => k && set({ status: k })} />
+        <SlideToggle
+          label="Status"
+          value={f.status}
+          options={statusOpts}
+          onChange={(status) => set({ status })}
+        />
       </Field>
       <div className="three fg">
         <div>

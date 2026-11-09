@@ -13,18 +13,22 @@ import {
   FilterSheet,
   PageHeader,
   RB,
-  Seg,
   Select,
   SlideToggle,
 } from '../components/ui';
 import { useSheets } from '../sheets/context';
 
-const FILTERS: { k: string; label: string; f: (b: BeanView) => boolean }[] = [
+const FILTERS: { k: string; label: string; name: string; f: (b: BeanView) => boolean }[] = [
   ...(['ordered', 'resting', 'freezing', 'drinking', 'finished'] as const).map((k) => {
     const st = statusOf(k)!;
-    return { k, label: `${st.icon} ${st.label}`, f: (b: BeanView) => b.status === k };
+    return {
+      k,
+      label: `${st.icon} ${st.label}`,
+      name: st.label,
+      f: (b: BeanView) => b.status === k,
+    };
   }),
-  { k: 'all', label: 'All', f: () => true },
+  { k: 'all', label: 'All', name: 'All', f: () => true },
 ];
 
 const SORTS = [
@@ -138,14 +142,15 @@ export function Beans() {
             onClear={() => setRsort('name')}
           >
             <FilterGroup title="Sort">
-              <Seg
-                opts={[
-                  { key: 'name', label: 'A–Z' },
-                  { key: 'rating', label: 'Top rated' },
-                  { key: 'bags', label: 'Most bags' },
-                ]}
+              <SlideToggle
+                label="Sort"
                 value={rsort}
-                onChange={(k) => setRsort(k ?? 'name')}
+                options={[
+                  ['name', 'A–Z'],
+                  ['rating', 'Top rated'],
+                  ['bags', 'Most bags'],
+                ]}
+                onChange={setRsort}
               />
             </FilterGroup>
           </FilterSheet>
@@ -237,13 +242,16 @@ export function Beans() {
           }}
         >
           <FilterGroup title="Status">
-            <Seg
-              opts={FILTERS.map((t) => ({
-                key: t.k,
-                label: `${t.label} ${m.beans.filter(t.f).length}`,
-              }))}
+            <SlideToggle
+              label="Status"
               value={filter}
-              onChange={(k) => setParam('f', k ?? 'drinking')}
+              options={FILTERS.map((t) => [
+                t.k,
+                <>
+                  {t.name} <span className="n">{m.beans.filter(t.f).length}</span>
+                </>,
+              ])}
+              onChange={(k) => setParam('f', k)}
             />
           </FilterGroup>
           {m.roasters.length > 1 && (
@@ -266,11 +274,7 @@ export function Beans() {
             </FilterGroup>
           )}
           <FilterGroup title="Sort">
-            <Seg
-              opts={SORTS.map(([key, label]) => ({ key, label }))}
-              value={sort}
-              onChange={(k) => setSort(k ?? 'recent')}
-            />
+            <SlideToggle label="Sort" value={sort} options={SORTS} onChange={setSort} />
           </FilterGroup>
         </FilterSheet>
       )}

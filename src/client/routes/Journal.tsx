@@ -3,7 +3,7 @@ import { dayLabel } from '@shared/logic/dates';
 import type { BrewView } from '@shared/logic/model';
 import { useModel } from '../lib/queries';
 import { BrewRow } from '../components/BrewRow';
-import { FilterButton, FilterGroup, FilterSheet, PageHeader, Seg } from '../components/ui';
+import { FilterButton, FilterGroup, FilterSheet, PageHeader, SlideToggle } from '../components/ui';
 
 export function Journal() {
   const data = useModel();
@@ -70,23 +70,25 @@ export function Journal() {
           }}
         >
           <FilterGroup title="Rating">
-            <Seg
-              opts={[
-                { key: 'all', label: 'All' },
-                { key: 'rated', label: 'Rated' },
-                { key: 'unrated', label: 'Unrated' },
-              ]}
+            <SlideToggle
+              label="Rating"
               value={rated}
-              onChange={(k) => setRated(k ?? 'all')}
+              options={[
+                ['all', 'All'],
+                ['rated', 'Rated'],
+                ['unrated', 'Unrated'],
+              ]}
+              onChange={setRated}
             />
           </FilterGroup>
           {methods.length > 0 && (
             <FilterGroup title="Method">
-              <Seg
-                opts={methods.map((o) => ({ key: o, label: o }))}
+              <SlideToggle
+                label="Method"
                 value={method}
-                onChange={setMethod}
                 allowClear
+                options={methods.map((o) => [o, o] as const)}
+                onChange={setMethod}
               />
             </FilterGroup>
           )}

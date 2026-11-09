@@ -1,6 +1,5 @@
-import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { fmtN } from '@shared/logic/units';
-import type { Tone } from '@shared/lookups';
 import { Icon, type IconName } from './Icon';
 
 export function cx(...c: (string | false | null | undefined)[]) {
@@ -13,45 +12,6 @@ export function RB({ v, big }: { v: number | null | undefined; big?: boolean }) 
   const c = v >= 8.5 ? 'top' : v >= 7 ? 'high' : v > 5 ? 'mid' : 'low';
   return <span className={cx('rb', 'rb-' + c, big && 'big')}>{fmtN(v)}</span>;
 }
-
-export interface Opt<K extends string = string> {
-  key: K;
-  label: string;
-  tone?: Tone;
-}
-
-/** A row of chips where one (or none, with allowClear) is chosen. */
-export function Seg<K extends string>({
-  opts,
-  value,
-  onChange,
-  allowClear,
-  small,
-}: {
-  opts: readonly Opt<K>[];
-  value: K | null | undefined;
-  onChange: (k: K | null) => void;
-  allowClear?: boolean;
-  small?: boolean;
-}) {
-  return (
-    <div className="seg">
-      {opts.map((o) => (
-        <button
-          key={o.key}
-          type="button"
-          className={cx('chip', small && 'sm', o.tone && 't-' + o.tone)}
-          aria-pressed={value === o.key}
-          onClick={() => onChange(allowClear && value === o.key ? null : o.key)}
-        >
-          {o.label}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-export const strOpts = (list: readonly string[]): Opt[] => list.map((s) => ({ key: s, label: s }));
 
 /** Chips for known values plus a dashed "New" chip to type one. */
 export function ChoiceInput({
@@ -560,42 +520,78 @@ export function InfoTip({ label, children }: { label: string; children: ReactNod
   );
 }
 
-/** Two or three options as one sliding toggle: the thumb slides to the chosen one. */
-export function SlideToggle<T extends string>({
-  value,
-  options,
-  onChange,
-  label,
-}: {
-  value: T;
+type SlideToggleProps<T extends string> = {
   options: readonly (readonly [T, ReactNode])[];
-  onChange: (v: T) => void;
   label: string;
-}) {
-  const index = Math.max(
-    0,
-    options.findIndex(([v]) => v === value),
-  );
+  className?: string;
+} & (
+  | { value: T | null | undefined; onChange: (v: T) => void; allowClear?: false }
+  /** Tapping the chosen option again clears it; no thumb shows while nothing is chosen. */
+  | { value: T | null | undefined; onChange: (v: T | null) => void; allowClear: true }
+);
+
+/**
+ * A few options as one sliding toggle: the thumb slides to the chosen one. Options share the
+ * width equally; one whose label needs more room grows to fit it, and when they can't all fit
+ * the toggle scrolls sideways. The thumb is measured from the chosen option.
+ */
+export function SlideToggle<T extends string>(props: SlideToggleProps<T>) {
+  const { options, label, className } = props;
+  const index = options.findIndex(([v]) => v === props.value);
   const n = options.length;
+  const track = useRef<HTMLDivElement>(null);
+  const [thumb, setThumb] = useState<{ left: number; width: number } | null>(null);
+  useLayoutEffect(() => {
+    const el = track.current;
+    if (!el) return;
+    const measure = () => {
+      const b = index >= 0 ? el.querySelectorAll<HTMLElement>(':scope > button')[index] : undefined;
+      setThumb((t) =>
+        !b
+          ? null
+          : t && t.left === b.offsetLeft && t.width === b.offsetWidth
+            ? t
+            : { left: b.offsetLeft, width: b.offsetWidth },
+      );
+      // Keep the chosen option in view when the toggle scrolls.
+      if (b && el.scrollWidth > el.clientWidth) {
+        if (b.offsetLeft < el.scrollLeft) el.scrollLeft = b.offsetLeft - 4;
+        else if (b.offsetLeft + b.offsetWidth > el.scrollLeft + el.clientWidth)
+          el.scrollLeft = b.offsetLeft + b.offsetWidth - el.clientWidth + 4;
+      }
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    for (const c of el.querySelectorAll(':scope > button')) ro.observe(c);
+    return () => ro.disconnect();
+  }, [index, n]);
+  const pick = (v: T) => {
+    if (props.allowClear) props.onChange(v === props.value ? null : v);
+    else props.onChange(v);
+  };
   return (
     <div
+      ref={track}
       role="tablist"
       aria-label={label}
-      className="slide"
-      style={{ gridTemplateColumns: `repeat(${n}, minmax(0, 1fr))` }}
+      className={cx('slide', className)}
+      style={{ gridTemplateColumns: `repeat(${n}, minmax(max-content, 1fr))` }}
     >
-      <span
-        aria-hidden="true"
-        className="slide-thumb"
-        style={{ width: `calc((100% - 8px) / ${n})`, transform: `translateX(${index * 100}%)` }}
-      />
+      {thumb && (
+        <span
+          aria-hidden="true"
+          className="slide-thumb"
+          style={{ width: thumb.width, transform: `translateX(${thumb.left}px)` }}
+        />
+      )}
       {options.map(([v, text], i) => (
         <button
           key={v}
           type="button"
           role="tab"
           aria-selected={i === index}
-          onClick={() => onChange(v)}
+          onClick={() => pick(v)}
         >
           {text}
         </button>
