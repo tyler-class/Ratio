@@ -396,7 +396,7 @@ describe('order arrived?', () => {
         kind: 'arrived',
         key: 'k',
         title: 'Order arrived?',
-        body: 'Did Kenya Gichathaini arrive? Mark it in.',
+        body: 'Did Kenya Gichathaini arrive? Mark it as received.',
         url: '/beans?bean=k',
         tag: 'arrived-k',
       },
@@ -404,13 +404,13 @@ describe('order arrived?', () => {
     // Arrived (resting now): nothing.
     const arrived = buildModel(state([{ ...ordered, status: 'resting' }], []), NOW);
     expect(arrivedNotices(arrived, '2026-11-09', TZ)).toEqual([]);
-    expect(arrivedBody('Ethiopia Guji')).toBe('Did Ethiopia Guji arrive? Mark it in.');
+    expect(arrivedBody('Ethiopia Guji')).toBe('Did Ethiopia Guji arrive? Mark it as received.');
   });
 
   it('sends once per bag', () => {
     const m = buildModel(state([ordered], []), NOW);
     expect(simulate(range('2026-11-01', 40), () => m)).toEqual([
-      '2026-11-09 arrived: Did Kenya Gichathaini arrive? Mark it in.',
+      '2026-11-09 arrived: Did Kenya Gichathaini arrive? Mark it as received.',
     ]);
   });
 });

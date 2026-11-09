@@ -237,8 +237,8 @@ export function emptyNotices(m: Pick<Model, 'beans' | 'avgDose'>, today: string,
 export const orderedDay = (b: BeanView, tz: string) =>
   b.status === 'ordered' ? dayIn(b.created, tz) : null;
 
-/** "Did Kenya Gichathaini arrive? Mark it in." */
-export const arrivedBody = (name: string) => `Did ${name} arrive? Mark it in.`;
+/** "Did Kenya Gichathaini arrive? Mark it as received." */
+export const arrivedBody = (name: string) => `Did ${name} arrive? Mark it as received.`;
 
 /** Due the day it's been on order more than ORDER_DAYS days. */
 export function arrivedNotices(m: Pick<Model, 'beans'>, today: string, tz: string): Notice[] {

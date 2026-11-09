@@ -472,7 +472,7 @@ describe('Ratio’s once-per-bag and evening notifications', () => {
     await run('2031-08-12T07:41Z');
     expect(await got()).toEqual([
       `Bag ready to drink | Kenya Gichathaini is ready to drink. | /beans?bean=${kenya.id}`,
-      `Order arrived? | Did Colombia Pink Bourbon arrive? Mark it in. | /beans?bean=${ordered.id}`,
+      `Order arrived? | Did Colombia Pink Bourbon arrive? Mark it as received. | /beans?bean=${ordered.id}`,
       `Freezer reminder | Ethiopia Guji has been frozen for 3 months. | /beans?bean=${guji.id}`,
     ]);
 
