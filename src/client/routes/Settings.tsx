@@ -300,6 +300,7 @@ function ConnectAI() {
               ))}
             </ol>
           )}
+          {shown.commandIntro && <p className="sub">{shown.commandIntro}</p>}
           {shown.command && (
             <div className="flexrow" style={{ flexWrap: 'nowrap' }}>
               <code style={codeStyle}>{shown.command}</code>
