@@ -13,13 +13,17 @@ import {
 } from '@shared/exportFormat';
 import { all, loadSettings, loadState } from '../db';
 import { ApiError, body, type AppEnv } from './util';
+import { setKitState } from '../kit/telemetry';
 
 export const admin = new Hono<AppEnv>();
 
 admin.get('/state', async (c) => c.json(await loadState(c.env.DB)));
 
 admin.patch('/settings', async (c) => {
-  const input = await body(c, settingsPatch);
+  const { telemetry, updates_set_up, ...input } = await body(c, settingsPatch);
+  // These two live in the Selfhost Kit's own table, not in settings.
+  if (telemetry !== undefined || updates_set_up !== undefined)
+    await setKitState(c.env.DB, { telemetry, updates_set_up });
   const stmts = Object.entries(input)
     .filter(([, v]) => v !== undefined)
     .map(([k, v]) =>

@@ -1,5 +1,6 @@
 import { DEFAULT_METHODS, normalizeStatus, type BeanStatus, type BuyAgain } from '@shared/lookups';
 import type { AppState, Bean, Brew, ImageRef, Roaster, Settings, TempUnit } from '@shared/types';
+import { kitState } from './kit/telemetry';
 
 export type Row = Record<string, unknown>;
 
@@ -213,10 +214,15 @@ export const DEFAULT_SETTINGS: Settings = {
   currency: 'USD',
   time_zone: 'UTC',
   insights_layout: [],
+  telemetry: true,
+  updates_set_up: false,
 };
 
 export async function loadSettings(db: D1Database): Promise<Settings> {
-  const rows = await all<{ key: string; value: string }>(db, 'SELECT key, value FROM settings');
+  const [rows, kit] = await Promise.all([
+    all<{ key: string; value: string }>(db, 'SELECT key, value FROM settings'),
+    kitState(db),
+  ]);
   const m = new Map(rows.map((r) => [r.key, r.value]));
   const list = (k: string, d: string[]) => (m.has(k) ? arr(m.get(k)) : d);
   return {
@@ -226,6 +232,8 @@ export async function loadSettings(db: D1Database): Promise<Settings> {
     currency: m.get('currency') ?? DEFAULT_SETTINGS.currency,
     time_zone: m.get('time_zone') ?? DEFAULT_SETTINGS.time_zone,
     insights_layout: panels(m.get('insights_layout')),
+    telemetry: kit.telemetry,
+    updates_set_up: kit.updates_set_up,
   };
 }
 

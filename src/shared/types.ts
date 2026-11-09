@@ -75,6 +75,10 @@ export interface Settings {
   time_zone: string;
   /** Insights panel order, width and visibility. Unknown or missing panels use defaults. */
   insights_layout: InsightsPanel[];
+  /** Send the anonymous daily check-in (counts only). */
+  telemetry: boolean;
+  /** Someone added the update workflow to this copy's GitHub repo, from Settings → Updates. */
+  updates_set_up: boolean;
 }
 
 export interface InsightsPanel {

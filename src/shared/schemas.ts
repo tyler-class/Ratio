@@ -52,6 +52,8 @@ export const settingsPatch = z
         }),
       )
       .max(40),
+    telemetry: z.boolean(),
+    updates_set_up: z.boolean(),
   })
   .partial();
 

@@ -96,11 +96,20 @@ Everyone is signed out and signs in again with the new password. Connected AI as
 
 ## Update your copy
 
-If you deployed with the button, your copy lives in your own GitHub account and updates itself: every Monday a GitHub Action takes the latest Ratio and pushes it to your copy, and Cloudflare migrates the database and redeploys. To update right away, open your copy on GitHub, go to **Actions → Update Ratio** and click **Run workflow**. Your data is in the database and R2, not the repo, so updates don’t touch it.
+Updates come in two steps, both in your own accounts: Ratio’s latest code goes into **your GitHub copy**, and Cloudflare deploys **your copy** whenever it changes. Ratio never deploys to your Cloudflare account directly.
 
-The update replaces the app’s code, so changes you made to your copy’s code are overwritten. Your `.github/workflows` and a `wrangler.jsonc` with your database id are kept.
+- **Your copy → your Cloudflare** is already on. The Deploy button set Cloudflare to build and deploy every change to your copy’s `main` branch (migrating the database first).
+- **Ratio → your copy** needs one click to turn on. The Deploy button doesn’t copy GitHub workflow files, so open **Settings → Updates** and choose **Set up automatic updates**. GitHub opens with the update workflow filled in; click **Commit changes**. That brings in the latest Ratio straight away, then every Monday.
+
+To update before Monday, choose **Update now** in Settings and click **Run workflow** on GitHub. Settings also shows when a newer Ratio is out.
+
+Your data is in the database and R2, not the repo, so updates don’t touch it. An update replaces the app’s code with Ratio’s, so changes you made to your copy’s code are overwritten. Two things are kept: your `.github/workflows` (GitHub doesn’t let a workflow change them, so if Ratio’s change, copy them over by hand) and a `wrangler.jsonc` that has your database id in it.
 
 If you deployed by hand, `git pull` and `npm run deploy`.
+
+## Anonymous usage counts
+
+Once a day your copy tells Ratio’s developer that it exists: a random id it made for itself, its version, how many roasters, bags, brews and photos it has, how many files are in its photo storage, and whether automatic updates are on. Never names, notes, photos or anything you type, and no IP address is kept. It shows how many copies are in use. Turn it off in **Settings → Updates → Share anonymous usage counts**.
 
 ## Local development
 

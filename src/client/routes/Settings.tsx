@@ -8,13 +8,30 @@ import { useTheme } from '../lib/theme';
 import { useSheets } from '../sheets/context';
 import { useToast } from '../components/Toast';
 import { Icon } from '../components/Icon';
-import { ConfirmButton, PageHeader, Seg, TagInput } from '../components/ui';
+import { ConfirmButton, InfoTip, PageHeader, Seg, Switch, TagInput } from '../components/ui';
+import {
+  isNewer,
+  isSourceRepo,
+  runUrl,
+  setupUrl,
+  UPSTREAM,
+  useLatestVersion,
+} from '../lib/updates';
 
-function Section({ title, children }: { title: string; children: ReactNode }) {
+function Section({
+  title,
+  trailing,
+  children,
+}: {
+  title: string;
+  trailing?: ReactNode;
+  children: ReactNode;
+}) {
   return (
     <section className="sec">
       <div className="sec-h">
         <h2>{title}</h2>
+        {trailing}
       </div>
       <div className="card flat">{children}</div>
     </section>
@@ -112,6 +129,12 @@ export function Settings() {
         <InstallHint />
       </Section>
       <Backup />
+      <Updates
+        setUp={s.updates_set_up}
+        onSetUp={() => actions.saveSettings({ updates_set_up: true })}
+        telemetry={s.telemetry}
+        onTelemetry={(telemetry) => actions.saveSettings({ telemetry })}
+      />
       <Section title="Account">
         <button
           type="button"
@@ -360,6 +383,133 @@ function Backup() {
           }
         }}
       />
+    </Section>
+  );
+}
+
+/**
+ * Updates: is a newer Ratio out, and links into this copy's own GitHub repo to add the
+ * update workflow (once) or run it. Updates go Ratio → their repo → their Cloudflare.
+ */
+function Updates({
+  setUp,
+  onSetUp,
+  telemetry,
+  onTelemetry,
+}: {
+  setUp: boolean;
+  onSetUp: () => void;
+  telemetry: boolean;
+  onTelemetry: (on: boolean) => void;
+}) {
+  const latest = useLatestVersion();
+  const current = __APP_VERSION__;
+  const repo = __SOURCE_REPO__;
+  const isSource = isSourceRepo(repo, UPSTREAM);
+  const newer = latest.data && isNewer(latest.data, current) ? latest.data : null;
+  const status = newer
+    ? `Ratio ${newer} is available. You have ${current}.`
+    : latest.isError
+      ? `Ratio ${current}. Couldn’t check for a newer version.`
+      : latest.data
+        ? `Ratio ${current}, up to date.`
+        : `Ratio ${current}.`;
+  return (
+    <Section
+      title="Updates"
+      trailing={
+        !isSource && (
+          <InfoTip label="How updates work">
+            <p>Updates take two steps, both in your own accounts:</p>
+            <ol style={{ margin: '0 0 8px', paddingLeft: 18 }}>
+              <li>
+                An update workflow in your GitHub copy brings in the latest Ratio every Monday.
+                GitHub needs you to add it once: Set up opens it ready to commit.
+              </li>
+              <li>Cloudflare deploys your copy every time it changes. That part is already on.</li>
+            </ol>
+            <p>
+              Your data lives in your database and storage, so updates don’t touch it. Changes you
+              made to the code in your copy are replaced.
+            </p>
+          </InfoTip>
+        )
+      }
+    >
+      <p style={{ marginTop: 0, color: newer ? 'var(--ink)' : undefined }} className="sub">
+        {status}
+      </p>
+      {isSource ? null : !repo ? (
+        <p className="sub">Deployed by hand: git pull, then npm run deploy.</p>
+      ) : (
+        <>
+          <div className="flexrow">
+            {setUp ? (
+              <a
+                className={newer ? 'btn primary' : 'btn'}
+                href={runUrl(repo)}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <Icon name="reset" size={16} /> Update now
+              </a>
+            ) : (
+              <a
+                className="btn primary"
+                href={setupUrl(repo, __SOURCE_BRANCH__)}
+                target="_blank"
+                rel="noreferrer"
+                onClick={onSetUp}
+              >
+                <Icon name="github" size={16} /> Set up automatic updates
+              </a>
+            )}
+            <a
+              className="upd-repo"
+              href={`https://github.com/${repo}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              {repo}
+            </a>
+          </div>
+          <p className="sub" style={{ marginBottom: 0 }}>
+            {setUp ? (
+              <>
+                Opens GitHub: click Run workflow.{' '}
+                <a href={setupUrl(repo, __SOURCE_BRANCH__)} target="_blank" rel="noreferrer">
+                  Set up again
+                </a>
+              </>
+            ) : (
+              'Opens GitHub: click Commit changes. It updates now, then every Monday.'
+            )}
+          </p>
+        </>
+      )}
+      <div
+        className="upd-row"
+        style={{ borderTop: '1px solid var(--line)', marginTop: 14, paddingTop: 14 }}
+      >
+        <span className="grow">
+          Share anonymous usage counts
+          <InfoTip label="What’s shared">
+            <p>Once a day this copy sends Ratio’s developer:</p>
+            <ul>
+              <li>a random id this copy made for itself</li>
+              <li>its version</li>
+              <li>how many roasters, bags, brews and photos it has (counts only)</li>
+              <li>how many files are in its photo storage (one total)</li>
+              <li>whether automatic updates are on</li>
+            </ul>
+            <p>
+              Never names, notes, photos or anything you type, and no IP address is kept. It shows
+              how many copies are in use, to decide what to work on next.
+            </p>
+          </InfoTip>
+        </span>
+        <Switch on={telemetry} onChange={onTelemetry} label="Share anonymous usage counts" />
+      </div>
     </Section>
   );
 }
