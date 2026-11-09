@@ -21,9 +21,39 @@ One deployment is one coffee log.
 
 ![On a phone: the journal of brews, rating a brew with the Extraction slider, and every bag](docs/screenshots/phones.png)
 
+### Logging a brew
+
+Pick the bag and the last recipe is filled in, with your best one a tap away. Lock the ratio and the water follows the dose.
+
+![Logging a brew on a phone: last time and the best recipe for the bag, then grind, dose and a locked 1:17 ratio](docs/screenshots/log-a-brew.png)
+
+### Journal
+
+![The journal on a laptop: every brew by day, with rating, recipe, grinder and temperature](docs/screenshots/journal.png)
+
+![Filters on a phone: the journal by rating and method, and beans by status, roaster and sort order](docs/screenshots/filters.png)
+
+### Beans and roasters
+
 ![Beans: every bag with its status, grams left, rating and buy-again verdict](docs/screenshots/beans.png)
 
+![A bag on a phone: average rating, grams used, price and cost per cup, its photo, every brew with it, and the Add a bag form](docs/screenshots/bag.png)
+
+![Roasters on a phone: each with its bags and average rating, and a roaster with its logo, details and bags](docs/screenshots/roasters.png)
+
+### Insights
+
 ![Insights: at a glance, the brewing calendar, brews per week and how you rate](docs/screenshots/insights.png)
+
+![Insights: the taste explorer by origin, ratio vs rating, and dial-in accuracy by month](docs/screenshots/insights-taste.png)
+
+![Insights: top bags, the order again shortlist, spend by roaster and the recipe book](docs/screenshots/insights-more.png)
+
+### Settings
+
+![Settings on a phone: units and equipment, and notifications with a switch for each kind](docs/screenshots/settings.png)
+
+### Dark mode
 
 ![Dark mode on a phone: home and insights](docs/screenshots/dark.png)
 
@@ -159,9 +189,13 @@ Open your Ratio link on the phone, then:
 - **iPhone:** in Safari, tap Share, then **Add to Home Screen**.
 - **Android:** in Chrome, open the menu and tap **Install app**.
 
+![Ratio on a phone: home, and the floating glass tab bar with the page scrolling under it](docs/screenshots/on-your-phone.png)
+
 ## Connect an AI assistant
 
 Ratio includes an [MCP](https://modelcontextprotocol.io) server at `https://<your-ratio>/mcp`. Open **Settings → Connect an AI assistant** to copy your URL and see steps for Claude, ChatGPT, Claude Code and others. When an assistant connects, Ratio shows a sign-in page; enter your password to approve it. **Disconnect all** in the same place revokes every assistant. Changing the password signs everyone out, but connected assistants keep working until you disconnect them.
+
+![Settings → Connect an AI assistant: your connector URL, setup steps for Claude and the Claude Code command](docs/screenshots/settings-ai.png)
 
 Assistants get these tools:
 
@@ -198,6 +232,8 @@ Assistants can’t pass a photo from the chat into a tool, so for “add this ph
 ## Back up and restore
 
 **Settings → Backup → Download backup** saves every roaster, bag and brew as one JSON file. **Restore from backup** replaces everything with a backup’s contents. Photos live in the R2 bucket and aren’t in the file; restoring into the same deployment keeps them attached.
+
+![Settings → Backup with Download backup and Restore from backup](docs/screenshots/settings-backup.png)
 
 ## Deploy by hand
 
