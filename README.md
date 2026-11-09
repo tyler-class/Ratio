@@ -4,7 +4,7 @@ A calm coffee brewing log you host yourself. Track the bags you buy, log every b
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/tyler-class/ratio)
 
-<!-- 📸 SCREENSHOT docs/screenshots/hero.png: Ratio on a phone: a bag's page with its dial-in table and recent brews -->
+![Ratio on a laptop and a phone: home with stock runway, and a bag's dial-in chart and recent brews](docs/screenshots/hero.png)
 
 - **Log a brew in seconds.** Pick the bag and Ratio fills in your last recipe: grind, dose, ratio, temperature. Lock the ratio and the water follows the dose. Rate it now or later.
 - **Dial in.** Each bag shows how every grind setting rated, your best recipe, and last time’s “next time” note.
@@ -16,6 +16,16 @@ A calm coffee brewing log you host yourself. Track the bags you buy, log every b
 - **Yours.** It runs on your own Cloudflare account. The free plan is plenty. Your data stays in your database.
 
 One deployment is one coffee log.
+
+## Screenshots
+
+![On a phone: the journal of brews, rating a brew with the Extraction slider, and every bag](docs/screenshots/phones.png)
+
+![Beans: every bag with its status, grams left, rating and buy-again verdict](docs/screenshots/beans.png)
+
+![Insights: at a glance, the brewing calendar, brews per week and how you rate](docs/screenshots/insights.png)
+
+![Dark mode on a phone: home and insights](docs/screenshots/dark.png)
 
 <!-- kit:readme:start -->
 <!-- Written by the Selfhost Kit (kit/docs/readme-install.md): edit it there. -->
@@ -76,7 +86,7 @@ Click **Create and deploy**. Cloudflare copies the code to your GitHub, creates 
 
 Open it, sign in with your password, and you're done. Bookmark it, or add it to your phone's home screen.
 
-<!-- 📸 SCREENSHOT docs/screenshots/install-7-signed-in.png: Ratio right after signing in -->
+![Ratio right after signing in](docs/screenshots/install-7-signed-in.png)
 
 ### 8. Set up automatic updates (recommended)
 
@@ -87,7 +97,7 @@ Your copy updates itself every Monday once you allow it. That takes one click, o
 
 That brings in the latest Ratio straight away, then every week. See [Updates](#updates) for how it works.
 
-<!-- 📸 SCREENSHOT docs/screenshots/install-8-updates.png: Settings → Updates with the Set up automatic updates button -->
+![Settings → Updates with the Set up automatic updates button](docs/screenshots/install-8-updates.png)
 <!-- 📸 SCREENSHOT docs/screenshots/install-8-commit.png: GitHub's new-file page with the update file filled in, and the Commit changes button -->
 
 ## Notifications
