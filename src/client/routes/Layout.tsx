@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useLocation } from 'react-router';
+import { Link, NavLink, Outlet, useLocation } from 'react-router';
 import { Icon, type IconName } from '../components/Icon';
 import { useSheets } from '../sheets/context';
 import { useTabSwipe } from '../lib/tabSwipe';
@@ -65,7 +65,9 @@ export function Layout() {
       {/* Phones: a solid app bar at the top, like Nitrogen's. iOS blurs whatever scrolls under
           the status bar (and a little below it) in installed apps; over a plain bar it's invisible. */}
       <header className="appbar">
-        <Brand />
+        <Link to="/" aria-label="Ratio home" className="appbar-home">
+          <Brand />
+        </Link>
       </header>
       <main className="main">
         <Outlet />
