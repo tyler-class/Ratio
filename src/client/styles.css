@@ -1483,7 +1483,7 @@ textarea.in {
   text-align: left;
   color: var(--ink);
   font-size: 15px;
-  cursor: copy;
+  cursor: pointer;
 }
 .try-list button:hover {
   color: var(--accent);
