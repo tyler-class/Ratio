@@ -1,7 +1,9 @@
-import { Link, NavLink, Outlet, useLocation } from 'react-router';
+import { useEffect } from 'react';
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router';
 import { Icon, type IconName } from '../components/Icon';
 import { useSheets } from '../sheets/context';
 import { useTabSwipe } from '../lib/tabSwipe';
+import { onPushOpen } from '../kit/push';
 
 const TABS: [string, string, IconName][] = [
   ['/', 'Home', 'home'],
@@ -44,6 +46,9 @@ export function Layout() {
   const active = activeTab(pathname);
   useTabSwipe(TAB_PATHS, tabRoot(pathname));
   const sheets = useSheets();
+  const nav = useNavigate();
+  // A tapped notification while Ratio is open: go to its screen in-app. (No app-icon badge.)
+  useEffect(() => onPushOpen((url) => nav(url)), [nav]);
   const tab = ([to, label, icon]: (typeof TABS)[number]) => (
     <NavLink key={to} to={to} aria-current={active === to ? 'page' : undefined}>
       <Icon name={icon} size={20} />

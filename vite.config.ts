@@ -40,6 +40,8 @@ export default defineConfig({
         ],
       },
       workbox: {
+        // Push notifications (Selfhost Kit: public/kit-push-sw.js).
+        importScripts: ['kit-push-sw.js'],
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
         // Pages are network-first (below), so a deploy shows up on the next load instead of
         // after the service worker updates. index.html stays precached only as the offline copy.

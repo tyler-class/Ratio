@@ -19,6 +19,7 @@ import { admin } from './routes/admin';
 import { connections } from './routes/connections';
 import { images } from './routes/images';
 import { records } from './routes/records';
+import { push } from './notifications';
 import { ApiError, body, type AppEnv } from './routes/util';
 import { uploadLinks } from './uploads';
 
@@ -65,6 +66,7 @@ app.route('/', records);
 app.route('/', images);
 app.route('/', connections);
 app.route('/', uploadLinks);
+app.route('/', push);
 
 app.notFound((c) => c.json({ error: 'not_found', message: 'No such endpoint.' }, 404));
 

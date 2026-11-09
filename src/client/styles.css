@@ -1584,6 +1584,16 @@ textarea.in {
   margin-bottom: 0;
 }
 
+/* Settings → Notifications' "Install on your phone" scrolls here: clear the phone app bar. */
+.sec[id] {
+  scroll-margin-top: calc(var(--safe-top) + 64px);
+}
+@media (min-width: 768px) {
+  .sec[id] {
+    scroll-margin-top: 16px;
+  }
+}
+
 /* Settings → Updates. */
 .upd-row {
   display: flex;

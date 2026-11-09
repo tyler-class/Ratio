@@ -71,8 +71,11 @@ export const TABLE_COLUMNS = {
 
 export type TableName = keyof typeof TABLE_COLUMNS;
 export const TABLE_ORDER = Object.keys(TABLE_COLUMNS) as TableName[];
-/** Never exported or overwritten: the session salt is per deployment. */
-export const PRIVATE_SETTINGS = ['session_salt'];
+/**
+ * Never exported or overwritten: the session salt is per deployment, and the "beans running low"
+ * spell goes with this copy's notifications (src/worker/notifications.ts).
+ */
+export const PRIVATE_SETTINGS = ['session_salt', 'beans_low_since'];
 
 export type Cell = string | number | null;
 export type ExportRow = Record<string, Cell | boolean | undefined>;

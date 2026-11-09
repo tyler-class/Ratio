@@ -31,6 +31,19 @@ import {
 } from '../kit/updates';
 import { buildFlags } from '@shared/kit/build';
 import { assistants, ASSISTANT_INTRO, CONNECTED_TEXT, signInNote } from '../kit/assistants';
+import {
+  disablePush,
+  enablePush,
+  getState,
+  installSteps,
+  pushBlocker,
+  pushInfo,
+  PUSH_TEXT,
+  sendTest,
+  setPrefs,
+  type PushState,
+} from '../kit/push';
+import { BADGE_MEANS, NOTIFY_KINDS } from '@shared/logic/notify';
 
 /** What the usage counts count, in words (matches USAGE_TABLES in the worker). */
 const USAGE_COUNTED = 'roasters, beans, brews and photos';
@@ -38,14 +51,16 @@ const USAGE_COUNTED = 'roasters, beans, brews and photos';
 function Section({
   title,
   trailing,
+  id,
   children,
 }: {
   title: string;
   trailing?: ReactNode;
+  id?: string;
   children: ReactNode;
 }) {
   return (
-    <section className="sec">
+    <section className="sec" id={id}>
       <div className="sec-h">
         <h2>{title}</h2>
         {trailing}
@@ -144,10 +159,11 @@ export function Settings() {
           />
         </div>
       </Section>
+      <Notifications />
       <ConnectAI />
       {/* Already installed: nothing to do here, so no section. */}
       {!isStandalone() && (
-        <Section title="Install on your phone">
+        <Section title="Install on your phone" id="install">
           <InstallHint />
         </Section>
       )}
@@ -189,6 +205,166 @@ function CurrencyPicker({ value, onSave }: { value: string; onSave: (v: string) 
         groups={[{ options }]}
       />
     </div>
+  );
+}
+
+const KINDS = NOTIFY_KINDS.map((k) => k.id);
+
+/** Settings → Notifications: this device's own choices (Selfhost Kit layout and words). */
+function Notifications() {
+  const toast = useToast();
+  const [state, setState] = useState<PushState | null>(null);
+  const [busy, setBusy] = useState(false);
+  useEffect(() => {
+    let live = true;
+    getState()
+      .then((s) => live && setState(s))
+      .catch((e) => live && toast({ text: errorMessage(e), tone: 'bad' }));
+    return () => {
+      live = false;
+    };
+  }, [toast]);
+
+  async function act(fn: () => Promise<void>) {
+    setBusy(true);
+    try {
+      await fn();
+    } catch (e) {
+      toast({ text: errorMessage(e), tone: 'bad' });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const info = pushInfo({ badge: BADGE_MEANS });
+  const blocker = state && pushBlocker(state, 'Ratio');
+  const on = !!state?.on;
+  const row = { borderTop: '1px solid var(--line)', marginTop: 12, paddingTop: 12 };
+
+  return (
+    <Section
+      title={PUSH_TEXT.heading}
+      trailing={
+        <InfoTip label={PUSH_TEXT.about}>
+          <ul>
+            {info.lines.map((t) => (
+              <li key={t}>{t}</li>
+            ))}
+          </ul>
+        </InfoTip>
+      }
+    >
+      {!state ? (
+        <div style={{ minHeight: 34 }} />
+      ) : blocker ? (
+        <>
+          <div className="upd-row">
+            <span className="grow">
+              {blocker.text}
+              {blocker.install && (
+                <InfoTip label={PUSH_TEXT.howToInstall}>
+                  {installSteps('Ratio').map((g) => (
+                    <div key={g.label}>
+                      <p style={{ color: 'var(--ink)', fontWeight: 600, margin: '0 0 4px' }}>
+                        {g.label}
+                      </p>
+                      <ol style={{ margin: '0 0 10px', paddingLeft: 18 }}>
+                        {g.steps.map((t) => (
+                          <li key={t}>{t}</li>
+                        ))}
+                      </ol>
+                    </div>
+                  ))}
+                </InfoTip>
+              )}
+            </span>
+          </div>
+          {blocker.install && !state.standalone && (
+            <button
+              type="button"
+              className="btn sm"
+              style={{ marginTop: 12 }}
+              onClick={() =>
+                document
+                  .getElementById('install')
+                  ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+              }
+            >
+              <Icon name="phone" size={15} /> {PUSH_TEXT.installLink}
+            </button>
+          )}
+        </>
+      ) : (
+        <>
+          <div className="upd-row">
+            <span className="grow">
+              {PUSH_TEXT.master}
+              {state.standalone && (
+                <InfoTip label={PUSH_TEXT.whyItWorks}>
+                  <p>{PUSH_TEXT.installed('Ratio')}</p>
+                </InfoTip>
+              )}
+            </span>
+            <Switch
+              on={on}
+              disabled={busy}
+              label={PUSH_TEXT.master}
+              // Straight from the tap: the permission prompt needs it.
+              onChange={(v) =>
+                act(async () => setState(await (v ? enablePush(KINDS) : disablePush())))
+              }
+            />
+          </div>
+          {on &&
+            NOTIFY_KINDS.map((k) => (
+              <div key={k.id} className="upd-row" style={row}>
+                <span style={{ flex: 1, minWidth: 0 }}>
+                  {k.label}
+                  <span className="sub" style={{ display: 'block', marginTop: 2 }}>
+                    {k.description}
+                  </span>
+                </span>
+                <Switch
+                  on={state.device?.prefs[k.id] !== false}
+                  label={k.label}
+                  onChange={(v) =>
+                    act(async () => {
+                      // Show it now; the server agrees or the toast says why.
+                      setState((s) =>
+                        s?.device
+                          ? {
+                              ...s,
+                              device: { ...s.device, prefs: { ...s.device.prefs, [k.id]: v } },
+                            }
+                          : s,
+                      );
+                      const device = await setPrefs({ [k.id]: v });
+                      if (device) setState((s) => s && { ...s, device });
+                    })
+                  }
+                />
+              </div>
+            ))}
+          {on && (
+            <div style={row}>
+              <button
+                type="button"
+                className="btn sm"
+                disabled={busy}
+                onClick={() =>
+                  act(async () => {
+                    await sendTest();
+                    toast({ text: PUSH_TEXT.testSent });
+                  })
+                }
+              >
+                <Icon name="bell" size={15} /> {PUSH_TEXT.test}
+              </button>
+            </div>
+          )}
+        </>
+      )}
+    </Section>
   );
 }
 
