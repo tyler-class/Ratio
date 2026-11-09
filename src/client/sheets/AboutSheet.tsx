@@ -1,5 +1,5 @@
-import { aboutLinks, BUILT_BY, type AboutLinkKind } from '../kit/about';
-import { Icon, type IconName } from '../components/Icon';
+import { ABOUT_ICONS, aboutLinks, BUILT_BY, type AboutLinkKind } from '../kit/about';
+import { Icon } from '../components/Icon';
 import { Sheet } from '../components/ui';
 import { useSheets } from './context';
 
@@ -9,12 +9,24 @@ const LINKS = aboutLinks({
   email: 'ratio@tylerclass.net',
   coffee: 'Ratio pours for free. Buy me a coffee ☕',
 });
-const ICONS: Record<AboutLinkKind, IconName> = {
-  github: 'github',
-  email: 'mail',
-  coffee: 'coffee',
-  site: 'link',
-};
+/** An About link's icon: the kit's shared set, identical in every app. */
+function LinkIcon({ kind, className }: { kind: AboutLinkKind; className?: string }) {
+  return (
+    <svg
+      width={18}
+      height={18}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.6}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+      dangerouslySetInnerHTML={{ __html: ABOUT_ICONS[kind] }}
+    />
+  );
+}
 
 /** About Ratio: version, what it is, who built it, and links (Selfhost Kit layout). */
 export function AboutSheet() {
@@ -34,7 +46,7 @@ export function AboutSheet() {
             href={l.href}
             {...(l.external ? { target: '_blank', rel: 'noreferrer' } : {})}
           >
-            <Icon name={ICONS[l.kind]} size={18} />
+            <LinkIcon kind={l.kind} />
             <span>{l.label}</span>
             <Icon name="chevRight" size={16} />
           </a>
