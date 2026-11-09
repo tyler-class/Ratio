@@ -74,6 +74,38 @@ export function Settings() {
           </button>
         }
       />
+      <Section title="Appearance">
+        <SlideToggle
+          label="Appearance"
+          value={theme}
+          options={[
+            ['light', 'Light'],
+            ['dark', 'Dark'],
+            ['system', 'System'],
+          ]}
+          onChange={setTheme}
+        />
+      </Section>
+      <Section title="Units">
+        <div className="fg">
+          <label className="lbl">Water temperature</label>
+          <Seg
+            opts={[
+              { key: 'F', label: '°F' },
+              { key: 'C', label: '°C' },
+            ]}
+            value={s.temp_unit}
+            onChange={(k) => k && actions.saveSettings({ temp_unit: k })}
+          />
+        </div>
+        <div>
+          <label className="lbl">Currency</label>
+          <CurrencyPicker
+            value={s.currency}
+            onSave={(currency) => actions.saveSettings({ currency })}
+          />
+        </div>
+      </Section>
       <Section title="Equipment">
         <div className="fg">
           <label className="lbl">Brew methods</label>
@@ -108,38 +140,6 @@ export function Settings() {
             ]}
             placeholder="Add a grinder"
             onChange={(grinders) => actions.saveSettings({ grinders })}
-          />
-        </div>
-      </Section>
-      <Section title="Appearance">
-        <SlideToggle
-          label="Appearance"
-          value={theme}
-          options={[
-            ['light', 'Light'],
-            ['dark', 'Dark'],
-            ['system', 'System'],
-          ]}
-          onChange={setTheme}
-        />
-      </Section>
-      <Section title="Units">
-        <div className="fg">
-          <label className="lbl">Water temperature</label>
-          <Seg
-            opts={[
-              { key: 'F', label: '°F' },
-              { key: 'C', label: '°C' },
-            ]}
-            value={s.temp_unit}
-            onChange={(k) => k && actions.saveSettings({ temp_unit: k })}
-          />
-        </div>
-        <div>
-          <label className="lbl">Currency</label>
-          <CurrencyPicker
-            value={s.currency}
-            onSave={(currency) => actions.saveSettings({ currency })}
           />
         </div>
       </Section>
