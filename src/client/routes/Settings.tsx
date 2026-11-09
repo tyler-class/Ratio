@@ -21,7 +21,14 @@ import {
 import { CURRENCIES } from '@shared/currency';
 import { currencySymbol } from '../lib/format';
 import { isSourceRepo, runUrl, setupUrl, UPSTREAM, useLatestVersion } from '../lib/updates';
-import { howUpdatesWork, UPDATE_TEXT, updateStatus, whatsShared } from '../kit/updates';
+import {
+  autoUpdatesInfo,
+  howUpdatesWork,
+  UPDATE_TEXT,
+  updateStatus,
+  whatsShared,
+  workflowFileUrl,
+} from '../kit/updates';
 import { buildFlags } from '@shared/kit/build';
 import { assistants, ASSISTANT_INTRO, CONNECTED_TEXT, signInNote } from '../kit/assistants';
 
@@ -442,6 +449,7 @@ function Updates({
   const latest = useLatestVersion();
   const repo = __SOURCE_REPO__;
   const isSource = isSourceRepo(repo, UPSTREAM);
+  const auto = autoUpdatesInfo('Ratio');
   const status = updateStatus('Ratio', __APP_VERSION__, latest.data, latest.isError);
   const how = howUpdatesWork('Ratio');
   const shared = whatsShared('Ratio', USAGE_COUNTED, true);
@@ -465,6 +473,39 @@ function Updates({
       <p style={{ marginTop: 0, color: status.newer ? 'var(--ink)' : undefined }} className="sub">
         {status.text}
       </p>
+      {setUp && repo && !isSource && (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            margin: '0 0 12px',
+            color: 'var(--ink)',
+          }}
+        >
+          <span style={{ display: 'inline-flex', color: 'var(--accent)' }}>
+            <Icon name="check" size={16} />
+          </span>
+          {UPDATE_TEXT.autoOn}
+          <InfoTip label={UPDATE_TEXT.aboutAutoOn}>
+            <p>{auto.what}</p>
+            <ul style={{ margin: '0 0 8px', paddingLeft: 18 }}>
+              {auto.how.map((t) => (
+                <li key={t}>{t}</li>
+              ))}
+            </ul>
+            <p>{auto.off}</p>
+            <a
+              href={workflowFileUrl(repo, __SOURCE_BRANCH__)}
+              target="_blank"
+              rel="noreferrer"
+              style={{ color: 'var(--accent)' }}
+            >
+              {auto.fileLink}
+            </a>
+          </InfoTip>
+        </div>
+      )}
       {isSource ? null : !repo ? (
         <p className="sub">{UPDATE_TEXT.byHand}</p>
       ) : (
