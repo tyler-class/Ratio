@@ -5,6 +5,7 @@ import { DEFAULT_METHODS } from '@shared/lookups';
 import { api, errorMessage } from '../lib/api';
 import { useActions, useModel } from '../lib/queries';
 import { useTheme } from '../lib/theme';
+import { isStandalone } from '../lib/pwa';
 import { useSheets } from '../sheets/context';
 import { useToast } from '../components/Toast';
 import { Icon } from '../components/Icon';
@@ -123,9 +124,12 @@ export function Settings() {
         </div>
       </Section>
       <ConnectAI />
-      <Section title="Install on your phone">
-        <InstallHint />
-      </Section>
+      {/* Already installed: nothing to do here, so no section. */}
+      {!isStandalone() && (
+        <Section title="Install on your phone">
+          <InstallHint />
+        </Section>
+      )}
       <Backup />
       <Updates
         setUp={s.updates_set_up}
@@ -340,15 +344,6 @@ function InstallHint() {
     window.addEventListener('beforeinstallprompt', on);
     return () => window.removeEventListener('beforeinstallprompt', on);
   }, []);
-  const standalone =
-    window.matchMedia?.('(display-mode: standalone)').matches ||
-    (navigator as { standalone?: boolean }).standalone === true;
-  if (standalone)
-    return (
-      <p className="sub" style={{ margin: 0 }}>
-        Ratio is installed on this device.
-      </p>
-    );
   return (
     <div>
       {prompt && (

@@ -202,6 +202,8 @@ function SortablePanel({
         <button
           type="button"
           className="pn-grip"
+          // Dragging a panel starts right away: not a swipe between tabs.
+          data-no-tab-swipe
           aria-label={`Move ${def.title}`}
           ref={setActivatorNodeRef}
           {...attributes}

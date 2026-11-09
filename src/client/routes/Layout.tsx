@@ -1,6 +1,7 @@
 import { NavLink, Outlet, useLocation } from 'react-router';
 import { Icon, type IconName } from '../components/Icon';
 import { useSheets } from '../sheets/context';
+import { useTabSwipe } from '../lib/tabSwipe';
 
 const TABS: [string, string, IconName][] = [
   ['/', 'Home', 'home'],
@@ -9,6 +10,14 @@ const TABS: [string, string, IconName][] = [
   ['/insights', 'Insights', 'chart'],
   ['/settings', 'Settings', 'settings'],
 ];
+
+const TAB_PATHS = TABS.map(([to]) => to);
+
+/** The tab whose page this is (swiping between tabs works there), or null elsewhere. */
+function tabRoot(path: string): string | null {
+  const p = path.replace(/\/+$/, '') || '/';
+  return TAB_PATHS.includes(p) ? p : null;
+}
 
 function activeTab(path: string): string {
   for (const [p] of TABS.slice(1)) if (path.startsWith(p)) return p;
@@ -31,7 +40,9 @@ export function Brand() {
  * solid band under the status bar. 768px and up: a sidebar with the same tabs.
  */
 export function Layout() {
-  const active = activeTab(useLocation().pathname);
+  const { pathname } = useLocation();
+  const active = activeTab(pathname);
+  useTabSwipe(TAB_PATHS, tabRoot(pathname));
   const sheets = useSheets();
   const tab = ([to, label, icon]: (typeof TABS)[number]) => (
     <NavLink key={to} to={to} aria-current={active === to ? 'page' : undefined}>
