@@ -62,9 +62,11 @@ export function Layout() {
           <Icon name="info" size={18} /> About Ratio
         </button>
       </aside>
-      {/* A solid strip under the status bar: iOS blurs whatever scrolls beneath it in installed
-          apps, so the page scrolls under a plain bar instead (0 tall in a browser tab). */}
-      <div className="statusband" aria-hidden />
+      {/* Phones: a solid app bar at the top, like Nitrogen's. iOS blurs whatever scrolls under
+          the status bar (and a little below it) in installed apps; over a plain bar it's invisible. */}
+      <header className="appbar">
+        <Brand />
+      </header>
       <main className="main">
         <Outlet />
       </main>

@@ -153,15 +153,27 @@ h3,
 .shell {
   min-height: 100%;
   min-height: 100lvh;
-  padding-top: calc(var(--safe-top) + 8px);
 }
-.statusband {
-  position: fixed;
-  inset: 0 0 auto 0;
-  height: var(--safe-top);
+.appbar {
+  position: sticky;
+  top: 0;
   z-index: 20;
-  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: calc(var(--safe-top) + 52px);
+  padding-top: var(--safe-top);
   background: var(--bg);
+  border-bottom: 1px solid var(--line);
+}
+.appbar .brand {
+  font-size: 20px;
+  gap: 8px;
+}
+.appbar .logo {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
 }
 .main {
   max-width: 1040px;
@@ -223,6 +235,7 @@ h3,
     padding-top: var(--safe-top);
     padding-left: 240px;
   }
+  .appbar,
   .tabbar,
   .fab {
     display: none;
