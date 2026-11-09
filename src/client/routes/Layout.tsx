@@ -52,7 +52,6 @@ export function Layout() {
   );
   return (
     <div className="shell">
-      <div className="statusband" aria-hidden />
       <aside className="side">
         <Brand />
         <button type="button" className="btn primary" onClick={() => sheets.log()}>

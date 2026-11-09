@@ -155,14 +155,6 @@ h3,
   min-height: 100lvh;
   padding-top: calc(var(--safe-top) + 8px);
 }
-.statusband {
-  position: fixed;
-  inset: 0 0 auto 0;
-  height: calc(var(--safe-top) + 8px);
-  z-index: 20;
-  pointer-events: none;
-  background: linear-gradient(var(--bg) 60%, transparent);
-}
 .main {
   max-width: 1040px;
   margin: 0 auto;
@@ -223,7 +215,6 @@ h3,
     padding-top: var(--safe-top);
     padding-left: 240px;
   }
-  .statusband,
   .tabbar,
   .fab {
     display: none;
