@@ -7,7 +7,7 @@ import {
   TEMP_PRESETS,
   flagFor,
 } from '@shared/lookups';
-import { agoLabel, dayLabel, daysBetween, timeLabel, toLocalInput } from '@shared/logic/dates';
+import { agoLabel, brewedAt, dayLabel, daysBetween, toLocalInput } from '@shared/logic/dates';
 import { recentGrinds, type BrewView, type Model } from '@shared/logic/model';
 import { fmtN, r1, tempIn, tempOut } from '@shared/logic/units';
 import type { Extraction, Strength } from '@shared/lookups';
@@ -244,7 +244,8 @@ export function BrewSheet({
       rec.notes = '';
     }
     if (!rec.water) rec.water = String(r1((parseNum(rec.dose) ?? 20) * rec.ratio));
-    return { beanId, ...rec, when: '', lock: true };
+    // When it was brewed: now, as the sheet opens; change it for one brewed earlier.
+    return { beanId, ...rec, when: toLocalInput(new Date()), lock: true };
   });
   const [rate, setRate] = useState(!!editing);
   const [rv, setRv] = useState<RateValues>(() => rateFrom(editing));
@@ -299,7 +300,7 @@ export function BrewSheet({
       water_ml: waterN,
       water_temp_c: tempIn(parseNum(f.temp), s.temp_unit),
       recipe_notes: f.notes,
-      ...(f.when ? { brewed_at: new Date(f.when).toISOString() } : {}),
+      ...(brewedAt(f.when) ? { brewed_at: brewedAt(f.when)! } : {}),
       ...(rate ? ratePayload(rv) : {}),
     };
     setBusy(true);
@@ -320,7 +321,7 @@ export function BrewSheet({
   return (
     <Sheet
       title={editing ? `Edit brew #${editing.num}` : 'Log a brew'}
-      sub={editing ? dayLabel(editing.date, now) : `${dayLabel(now, now)}, ${timeLabel(now)}`}
+      sub={editing ? dayLabel(editing.date, now) : undefined}
       onClose={sheets.close}
       footer={
         <>
@@ -347,6 +348,15 @@ export function BrewSheet({
         </>
       }
     >
+      <Field label="When">
+        <input
+          className="in when"
+          type="datetime-local"
+          aria-label="When you brewed it"
+          value={f.when}
+          onChange={(e) => set({ when: e.target.value })}
+        />
+      </Field>
       <Field label="Bean">
         {drinking.length > 0 && (
           <div className="seg" style={{ marginBottom: 10 }}>
@@ -526,30 +536,6 @@ export function BrewSheet({
           onChange={(e) => set({ notes: e.target.value })}
         />
       </Field>
-      {editing ? (
-        <Field label="When">
-          <input
-            className="in"
-            type="datetime-local"
-            style={{ maxWidth: 260 }}
-            value={f.when}
-            onChange={(e) => set({ when: e.target.value })}
-          />
-        </Field>
-      ) : (
-        <details className="fg">
-          <summary className="sub" style={{ cursor: 'pointer' }}>
-            Brewed earlier?
-          </summary>
-          <input
-            className="in"
-            type="datetime-local"
-            style={{ maxWidth: 260, marginTop: 8 }}
-            value={f.when}
-            onChange={(e) => set({ when: e.target.value })}
-          />
-        </details>
-      )}
       {editing ? (
         <RateFields v={rv} set={(p) => setRv((x) => ({ ...x, ...p }))} />
       ) : (

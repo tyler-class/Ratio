@@ -1,4 +1,5 @@
 import { DEFAULT_METHODS, normalizeStatus, type BeanStatus, type BuyAgain } from '@shared/lookups';
+import { normalizeCurrency } from '@shared/currency';
 import type { AppState, Bean, Brew, ImageRef, Roaster, Settings, TempUnit } from '@shared/types';
 import { kitState } from './kit/telemetry';
 
@@ -212,6 +213,7 @@ export const DEFAULT_SETTINGS: Settings = {
   grinders: [],
   temp_unit: 'F',
   currency: 'USD',
+  currency_set: false,
   time_zone: 'UTC',
   insights_layout: [],
   telemetry: true,
@@ -229,7 +231,9 @@ export async function loadSettings(db: D1Database): Promise<Settings> {
     methods: list('methods', DEFAULT_SETTINGS.methods),
     grinders: list('grinders', DEFAULT_SETTINGS.grinders),
     temp_unit: (m.get('temp_unit') as TempUnit | undefined) ?? DEFAULT_SETTINGS.temp_unit,
-    currency: m.get('currency') ?? DEFAULT_SETTINGS.currency,
+    // Older copies stored free text; read it as a code (symbols and names understood).
+    currency: normalizeCurrency(m.get('currency') ?? DEFAULT_SETTINGS.currency),
+    currency_set: m.has('currency'),
     time_zone: m.get('time_zone') ?? DEFAULT_SETTINGS.time_zone,
     insights_layout: panels(m.get('insights_layout')),
     telemetry: kit.telemetry,

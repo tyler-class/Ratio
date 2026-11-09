@@ -15,7 +15,8 @@ import { agoLabel, dayLabel, daysBetween, parseDay } from '@shared/logic/dates';
 import { grindTable, type Model } from '@shared/logic/model';
 import { fmtN, r1 } from '@shared/logic/units';
 import type { Settings } from '@shared/types';
-import { money, numStr, parseNum } from '../lib/format';
+import { currencySymbol, money, numStr, parseNum } from '../lib/format';
+import { currencyDigits, roundMoney } from '@shared/currency';
 import { useActions } from '../lib/queries';
 import { useToast } from '../components/Toast';
 import { Legend, Scatter } from '../components/charts';
@@ -216,7 +217,7 @@ export function BeanSheet({ m, s, beanId }: { m: Model; s: Settings; beanId: str
 }
 
 /** Add a bag, or edit every detail of one. */
-export function BeanForm({ m, beanId }: { m: Model; beanId?: string }) {
+export function BeanForm({ m, s, beanId }: { m: Model; s: Settings; beanId?: string }) {
   const sheets = useSheets();
   const actions = useActions();
   const toast = useToast();
@@ -279,7 +280,8 @@ export function BeanForm({ m, beanId }: { m: Model; beanId?: string }) {
       received_on: f.received_on || null,
       rest_until: f.rest_until || null,
       bag_g: parseNum(f.bag),
-      cost: parseNum(f.cost),
+      // The price, to the currency's own decimals (whole yen, cents for dollars).
+      cost: parseNum(f.cost) == null ? null : roundMoney(parseNum(f.cost)!, s.currency),
       tasting_notes: f.tasting,
       roaster_notes: f.roaster_notes,
     };
@@ -363,12 +365,12 @@ export function BeanForm({ m, beanId }: { m: Model; beanId?: string }) {
           />
         </div>
         <div>
-          <label className="lbl">Cost</label>
+          <label className="lbl">Cost ({currencySymbol(s.currency)})</label>
           <input
             className="in"
-            inputMode="decimal"
+            inputMode={currencyDigits(s.currency) ? 'decimal' : 'numeric'}
             value={f.cost}
-            placeholder="22"
+            placeholder={currencyDigits(s.currency) ? '22.00' : '3000'}
             onChange={(e) => set({ cost: e.target.value })}
           />
         </div>

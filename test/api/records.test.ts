@@ -103,4 +103,16 @@ describe('records', () => {
     const row = await env.DB.prepare("SELECT value FROM settings WHERE key = 'grinders'").first();
     expect(row).toEqual({ value: '["Fellow Ode"]' });
   });
+
+  it('keeps the currency as a code, and reads old free text as one', async () => {
+    const api = await session();
+    // A code in any case is saved upper-case, and marks the currency as chosen.
+    const s = await api.patch<AppState['settings']>('/settings', { currency: 'jpy' });
+    expect(s.data).toMatchObject({ currency: 'JPY', currency_set: true });
+    // An older copy may have saved a symbol: it reads as its code.
+    await env.DB.prepare("UPDATE settings SET value = '€' WHERE key = 'currency'").run();
+    expect((await api.get<AppState>('/state')).data.settings.currency).toBe('EUR');
+    await env.DB.prepare("UPDATE settings SET value = 'beans' WHERE key = 'currency'").run();
+    expect((await api.get<AppState>('/state')).data.settings.currency).toBe('USD');
+  });
 });

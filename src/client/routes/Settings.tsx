@@ -9,7 +9,17 @@ import { isStandalone } from '../lib/pwa';
 import { useSheets } from '../sheets/context';
 import { useToast } from '../components/Toast';
 import { Icon } from '../components/Icon';
-import { ConfirmButton, InfoTip, PageHeader, Seg, Switch, TagInput } from '../components/ui';
+import {
+  ConfirmButton,
+  InfoTip,
+  PageHeader,
+  Seg,
+  Select,
+  Switch,
+  TagInput,
+} from '../components/ui';
+import { CURRENCIES } from '@shared/currency';
+import { currencySymbol } from '../lib/format';
 import { isSourceRepo, runUrl, setupUrl, UPSTREAM, useLatestVersion } from '../lib/updates';
 import { howUpdatesWork, UPDATE_TEXT, updateStatus, whatsShared } from '../kit/updates';
 import { buildFlags } from '@shared/kit/build';
@@ -118,7 +128,7 @@ export function Settings() {
         </div>
         <div>
           <label className="lbl">Currency</label>
-          <CurrencyInput
+          <CurrencyPicker
             value={s.currency}
             onSave={(currency) => actions.saveSettings({ currency })}
           />
@@ -154,17 +164,21 @@ export function Settings() {
   );
 }
 
-function CurrencyInput({ value, onSave }: { value: string; onSave: (v: string) => void }) {
-  const [v, setV] = useState(value);
+/** The ten most common currencies (and the saved one, if it's another). */
+function CurrencyPicker({ value, onSave }: { value: string; onSave: (v: string) => void }) {
+  const codes: string[] = CURRENCIES.map((c) => c.code);
+  const options = [
+    ...CURRENCIES.map((c) => ({ code: c.code, name: c.name })),
+    ...(codes.includes(value) ? [] : [{ code: value, name: value }]),
+  ].map((c) => ({ value: c.code, label: `${c.code} · ${c.name} (${currencySymbol(c.code)})` }));
   return (
-    <input
-      className="in"
-      style={{ maxWidth: 120, textTransform: 'uppercase' }}
-      value={v}
-      maxLength={3}
-      onChange={(e) => setV(e.target.value.toUpperCase())}
-      onBlur={() => /^[A-Z]{3}$/.test(v) && v !== value && onSave(v)}
-    />
+    <div style={{ maxWidth: 320 }}>
+      <Select
+        value={value}
+        onChange={(v) => v && v !== value && onSave(v)}
+        groups={[{ options }]}
+      />
+    </div>
   );
 }
 

@@ -44,7 +44,8 @@ export function SheetProvider({ children }: { children: ReactNode }) {
       sheet = <RateSheet key={'rate' + open.id} m={m} s={s} brewId={open.id} />;
     if (open.type === 'bean')
       sheet = <BeanSheet key={'bean' + open.id} m={m} s={s} beanId={open.id} />;
-    if (open.type === 'beanForm') sheet = <BeanForm key={'bf' + open.n} m={m} beanId={open.id} />;
+    if (open.type === 'beanForm')
+      sheet = <BeanForm key={'bf' + open.n} m={m} s={s} beanId={open.id} />;
     if (open.type === 'roaster')
       sheet = <RoasterSheet key={'r' + open.n} m={m} roasterId={open.id} />;
   }

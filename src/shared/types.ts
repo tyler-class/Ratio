@@ -70,7 +70,10 @@ export interface Settings {
   methods: string[];
   grinders: string[];
   temp_unit: TempUnit;
+  /** ISO 4217 code, like USD. */
   currency: string;
+  /** Someone chose the currency (else the app suggests one from the browser's language). */
+  currency_set: boolean;
   /** IANA zone the app last reported, so assistants see local dates and times. */
   time_zone: string;
   /** Insights panel order, width and visibility. Unknown or missing panels use defaults. */

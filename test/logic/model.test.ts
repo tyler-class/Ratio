@@ -67,6 +67,7 @@ const state = (beans: Bean[], brews: Brew[]): AppState => ({
     grinders: [],
     temp_unit: 'F',
     currency: 'USD',
+    currency_set: true,
     time_zone: 'UTC',
     insights_layout: [],
     telemetry: true,

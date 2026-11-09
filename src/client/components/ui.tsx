@@ -559,3 +559,104 @@ export function InfoTip({ label, children }: { label: string; children: ReactNod
     </span>
   );
 }
+
+/** Two or three options as one sliding toggle: the thumb slides to the chosen one. */
+export function SlideToggle<T extends string>({
+  value,
+  options,
+  onChange,
+  label,
+}: {
+  value: T;
+  options: readonly (readonly [T, ReactNode])[];
+  onChange: (v: T) => void;
+  label: string;
+}) {
+  const index = Math.max(
+    0,
+    options.findIndex(([v]) => v === value),
+  );
+  const n = options.length;
+  return (
+    <div
+      role="tablist"
+      aria-label={label}
+      className="slide"
+      style={{ gridTemplateColumns: `repeat(${n}, minmax(0, 1fr))` }}
+    >
+      <span
+        aria-hidden="true"
+        className="slide-thumb"
+        style={{ width: `calc((100% - 8px) / ${n})`, transform: `translateX(${index * 100}%)` }}
+      />
+      {options.map(([v, text], i) => (
+        <button
+          key={v}
+          type="button"
+          role="tab"
+          aria-selected={i === index}
+          onClick={() => onChange(v)}
+        >
+          {text}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/** The filter icon button that opens a list's filters, with how many are set. */
+export function FilterButton({ count, onClick }: { count: number; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      className={cx('filter-btn', count > 0 && 'on')}
+      onClick={onClick}
+      aria-label={count ? `Filters, ${count} set` : 'Filters'}
+    >
+      <Icon name="filter" size={18} />
+      {count > 0 && <span className="badge">{count}</span>}
+    </button>
+  );
+}
+
+/** The filters drawer: a sheet with sections, Clear and Done. */
+export function FilterSheet({
+  onClose,
+  onClear,
+  count,
+  children,
+}: {
+  onClose: () => void;
+  onClear: () => void;
+  count: number;
+  children: ReactNode;
+}) {
+  return (
+    <Sheet
+      title="Filters"
+      onClose={onClose}
+      footer={
+        <>
+          <button type="button" className="btn left" onClick={onClear} disabled={!count}>
+            Clear
+          </button>
+          <button type="button" className="btn primary" onClick={onClose}>
+            Done
+          </button>
+        </>
+      }
+    >
+      <div className="filters">{children}</div>
+    </Sheet>
+  );
+}
+
+/** One titled group of choices inside the filters drawer. */
+export function FilterGroup({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <section className="fgroup">
+      <div className="lbl">{title}</div>
+      {children}
+    </section>
+  );
+}

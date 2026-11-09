@@ -1,5 +1,6 @@
+import { currencyForLocale } from '@shared/currency';
 import { QueryClient, QueryClientProvider, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router';
 import { api, ApiError, onUnauthorized } from './lib/api';
 import { startPwa } from './lib/pwa';
@@ -54,6 +55,19 @@ function SyncTimeZone() {
   return null;
 }
 
+/** Until someone picks a currency, use the one this browser's language suggests (once). */
+function SyncCurrency() {
+  const { data } = useAppState();
+  const { saveSettings } = useActions();
+  const done = useRef(false);
+  useEffect(() => {
+    if (!data || data.settings.currency_set || done.current) return;
+    done.current = true;
+    void saveSettings({ currency: currencyForLocale(navigator.language) });
+  }, [data, saveSettings]);
+  return null;
+}
+
 function Gate() {
   const qc = useQueryClient();
   const session = useQuery({
@@ -80,6 +94,7 @@ function Gate() {
   return (
     <>
       {!offline && <SyncTimeZone />}
+      {!offline && <SyncCurrency />}
       <RouterProvider router={router} />
     </>
   );

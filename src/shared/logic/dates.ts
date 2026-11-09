@@ -54,3 +54,10 @@ export const inDays = (n: number) => (n === 1 ? '1 day' : `${n} days`);
 export function toLocalInput(d: Date): string {
   return `${dayKey(d)}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
+
+/** A datetime-local value ("2026-11-09T07:30", local time) as an ISO instant; null if blank or bad. */
+export function brewedAt(local: string): string | null {
+  if (!local) return null;
+  const d = new Date(local);
+  return Number.isNaN(d.getTime()) ? null : d.toISOString();
+}

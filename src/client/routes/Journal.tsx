@@ -3,7 +3,7 @@ import { dayLabel } from '@shared/logic/dates';
 import type { BrewView } from '@shared/logic/model';
 import { useModel } from '../lib/queries';
 import { BrewRow } from '../components/BrewRow';
-import { PageHeader } from '../components/ui';
+import { FilterButton, FilterGroup, FilterSheet, PageHeader, Seg } from '../components/ui';
 
 export function Journal() {
   const data = useModel();
@@ -12,6 +12,7 @@ export function Journal() {
   const [rated, setRated] = useState<'all' | 'rated' | 'unrated'>('all');
   const [limit, setLimit] = useState(40);
   const [open, setOpen] = useState<string | null>(null);
+  const [filters, setFilters] = useState(false);
   if (!data) return null;
   const { m, state } = data;
   const now = new Date();
@@ -30,6 +31,7 @@ export function Journal() {
       return false;
     return true;
   });
+  const active = (rated !== 'all' ? 1 : 0) + (method ? 1 : 0);
   const groups: { key: string; date: Date; items: BrewView[] }[] = [];
   for (const b of list.slice(0, limit)) {
     const g = groups[groups.length - 1];
@@ -39,7 +41,7 @@ export function Journal() {
   return (
     <div>
       <PageHeader title="Journal" icon="book" />
-      <div className="flexrow">
+      <div className="searchrow">
         <input
           className="in search"
           type="search"
@@ -47,38 +49,49 @@ export function Journal() {
           value={q}
           onChange={(e) => setQ(e.target.value)}
         />
-        <div className="seg">
-          {(['all', 'rated', 'unrated'] as const).map((k) => (
-            <button
-              key={k}
-              type="button"
-              className="chip sm"
-              aria-pressed={rated === k}
-              onClick={() => setRated(k)}
-            >
-              {k[0]!.toUpperCase() + k.slice(1)}
-            </button>
-          ))}
-        </div>
+        <FilterButton count={active} onClick={() => setFilters(true)} />
       </div>
-      {methods.length > 1 && (
-        <div className="seg" style={{ marginTop: 10 }}>
-          {methods.map((o) => (
-            <button
-              key={o}
-              type="button"
-              className="chip sm"
-              aria-pressed={method === o}
-              onClick={() => setMethod(method === o ? null : o)}
-            >
-              {o}
-            </button>
-          ))}
-        </div>
+      <div className="sub listmeta">
+        {[
+          `${list.length} ${list.length === 1 ? 'brew' : 'brews'}`,
+          rated !== 'all' && (rated === 'rated' ? 'Rated' : 'Unrated'),
+          method,
+        ]
+          .filter(Boolean)
+          .join(' · ')}
+      </div>
+      {filters && (
+        <FilterSheet
+          count={active}
+          onClose={() => setFilters(false)}
+          onClear={() => {
+            setRated('all');
+            setMethod(null);
+          }}
+        >
+          <FilterGroup title="Rating">
+            <Seg
+              opts={[
+                { key: 'all', label: 'All' },
+                { key: 'rated', label: 'Rated' },
+                { key: 'unrated', label: 'Unrated' },
+              ]}
+              value={rated}
+              onChange={(k) => setRated(k ?? 'all')}
+            />
+          </FilterGroup>
+          {methods.length > 0 && (
+            <FilterGroup title="Method">
+              <Seg
+                opts={methods.map((o) => ({ key: o, label: o }))}
+                value={method}
+                onChange={setMethod}
+                allowClear
+              />
+            </FilterGroup>
+          )}
+        </FilterSheet>
       )}
-      <div className="sub" style={{ marginTop: 12 }}>
-        {list.length} {list.length === 1 ? 'brew' : 'brews'}
-      </div>
       {groups.map((g) => (
         <div key={g.key}>
           <div className="dayh">

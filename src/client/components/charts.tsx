@@ -1,6 +1,31 @@
 // Small hand-drawn SVG charts, styled by CSS classes so they follow the theme.
 import { dayKey, MO, startOfDay, WD } from '@shared/logic/dates';
 import { fmtN } from '@shared/logic/units';
+import { useEffect, useRef, useState } from 'react';
+
+/**
+ * The width a chart actually has, so it draws at true size: text and dots stay the same size
+ * in a half-width panel, a full-width one and on a phone, instead of the picture scaling up.
+ */
+function useWidth(fallback = 600) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [w, setW] = useState(fallback);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([e]) => {
+      const next = Math.round(e!.contentRect.width);
+      if (next > 0) setW(next);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  return [ref, Math.max(220, w)] as const;
+}
+
+/** Show every nth label so they never run into each other. */
+const every = (count: number, width: number, minGap: number) =>
+  Math.max(1, Math.ceil((count * minGap) / Math.max(1, width)));
 
 export interface Col {
   label: string;
@@ -9,43 +34,50 @@ export interface Col {
 }
 
 export function Columns({ data, height = 160 }: { data: Col[]; height?: number }) {
-  const W = 600,
-    H = height,
+  const [ref, W] = useWidth();
+  const H = height,
     pl = 6,
     pb = 24,
     pt = 20;
   const max = Math.max(1, ...data.map((d) => d.value));
   const bw = (W - pl * 2) / Math.max(1, data.length);
+  // Bars stay slim on a wide panel; labels thin out on a narrow one.
+  const barW = Math.min(bw * 0.7, 44);
+  const step = every(data.length, W, 38);
   return (
-    <svg className="chart" viewBox={`0 0 ${W} ${H}`} width="100%" role="img">
-      <line className="ax" x1={pl} x2={W - pl} y1={H - pb} y2={H - pb} />
-      {data.map((d, i) => {
-        const h = ((H - pb - pt) * d.value) / max;
-        const x = pl + i * bw + bw * 0.15;
-        return (
-          <g key={i}>
-            <rect
-              className={'bar-' + (d.tone ?? 'a')}
-              x={x}
-              y={H - pb - h}
-              width={bw * 0.7}
-              height={Math.max(h, d.value > 0 ? 2 : 0)}
-              rx={4}
-            >
-              <title>{`${d.label}: ${d.value}`}</title>
-            </rect>
-            {d.value > 0 && (
-              <text className="vl" x={x + bw * 0.35} y={H - pb - h - 5} textAnchor="middle">
-                {d.value}
-              </text>
-            )}
-            <text x={x + bw * 0.35} y={H - 7} textAnchor="middle">
-              {d.label}
-            </text>
-          </g>
-        );
-      })}
-    </svg>
+    <div ref={ref} className="chart-box">
+      <svg className="chart" viewBox={`0 0 ${W} ${H}`} width={W} height={H} role="img">
+        <line className="ax" x1={pl} x2={W - pl} y1={H - pb} y2={H - pb} />
+        {data.map((d, i) => {
+          const h = ((H - pb - pt) * d.value) / max;
+          const x = pl + i * bw + (bw - barW) / 2;
+          return (
+            <g key={i}>
+              <rect
+                className={'bar-' + (d.tone ?? 'a')}
+                x={x}
+                y={H - pb - h}
+                width={barW}
+                height={Math.max(h, d.value > 0 ? 2 : 0)}
+                rx={4}
+              >
+                <title>{`${d.label}: ${d.value}`}</title>
+              </rect>
+              {d.value > 0 && (
+                <text className="vl" x={x + barW / 2} y={H - pb - h - 5} textAnchor="middle">
+                  {d.value}
+                </text>
+              )}
+              {i % step === 0 && (
+                <text x={x + barW / 2} y={H - 7} textAnchor="middle">
+                  {d.label}
+                </text>
+              )}
+            </g>
+          );
+        })}
+      </svg>
+    </div>
   );
 }
 
@@ -75,8 +107,8 @@ export function Scatter({
   yStep: number;
   xFmt?: (v: number) => string;
 }) {
-  const W = 600,
-    H = 250,
+  const [ref, W] = useWidth();
+  const H = 250,
     l = 34,
     r = 12,
     t = 10,
@@ -85,30 +117,35 @@ export function Scatter({
   const sy = (v: number) => H - b - ((v - yMin) / (yMax - yMin || 1)) * (H - t - b);
   const xs: number[] = [];
   for (let v = xMin; v <= xMax + 1e-9; v += xStep) xs.push(v);
+  const xEvery = every(xs.length, W - l - r, 44);
   const ys: number[] = [];
   for (let v = yMin; v <= yMax + 1e-9; v += yStep) ys.push(v);
   return (
-    <svg className="chart" viewBox={`0 0 ${W} ${H}`} width="100%" role="img">
-      {ys.map((v) => (
-        <g key={'y' + v}>
-          <line className="gl" x1={l} x2={W - r} y1={sy(v)} y2={sy(v)} />
-          <text x={l - 8} y={sy(v) + 4} textAnchor="end">
-            {fmtN(v)}
-          </text>
-        </g>
-      ))}
-      {xs.map((v) => (
-        <text key={'x' + v} x={sx(v)} y={H - 8} textAnchor="middle">
-          {xFmt ? xFmt(v) : fmtN(v)}
-        </text>
-      ))}
-      <line className="ax" x1={l} x2={W - r} y1={H - b} y2={H - b} />
-      {pts.map((p, i) => (
-        <circle key={i} className={'dot-' + (p.tone ?? 'a')} cx={sx(p.x)} cy={sy(p.y)} r={5.5}>
-          <title>{p.title}</title>
-        </circle>
-      ))}
-    </svg>
+    <div ref={ref} className="chart-box">
+      <svg className="chart" viewBox={`0 0 ${W} ${H}`} width={W} height={H} role="img">
+        {ys.map((v) => (
+          <g key={'y' + v}>
+            <line className="gl" x1={l} x2={W - r} y1={sy(v)} y2={sy(v)} />
+            <text x={l - 8} y={sy(v) + 4} textAnchor="end">
+              {fmtN(v)}
+            </text>
+          </g>
+        ))}
+        {xs.map((v, i) =>
+          i % xEvery === 0 ? (
+            <text key={'x' + v} x={sx(v)} y={H - 8} textAnchor="middle">
+              {xFmt ? xFmt(v) : fmtN(v)}
+            </text>
+          ) : null,
+        )}
+        <line className="ax" x1={l} x2={W - r} y1={H - b} y2={H - b} />
+        {pts.map((p, i) => (
+          <circle key={i} className={'dot-' + (p.tone ?? 'a')} cx={sx(p.x)} cy={sy(p.y)} r={5.5}>
+            <title>{p.title}</title>
+          </circle>
+        ))}
+      </svg>
+    </div>
   );
 }
 
@@ -151,9 +188,10 @@ export function Heatmap({ keys }: { keys: string[] }) {
     <svg
       className="chart"
       viewBox={`0 0 ${W} ${H}`}
-      width="100%"
+      width={W}
+      height={H}
       role="img"
-      style={{ maxWidth: 760, display: 'block' }}
+      style={{ maxWidth: '100%', height: 'auto', display: 'block' }}
     >
       {months.map((m, i) => (
         <text key={i} x={m.x} y={10}>
@@ -192,8 +230,8 @@ export interface MonthMix {
 }
 
 export function StackedMonths({ data }: { data: MonthMix[] }) {
-  const W = 600,
-    H = 190,
+  const [ref, W] = useWidth();
+  const H = 190,
     pb = 24,
     pt = 8;
   const bw = (W - 12) / Math.max(1, data.length);
@@ -203,29 +241,43 @@ export function StackedMonths({ data }: { data: MonthMix[] }) {
     { k: 'over', c: 'bad' },
     { k: 'balanced', c: 'good' },
   ] as const;
+  const barW = Math.min(bw * 0.72, 56);
+  const step = every(data.length, W, 40);
   return (
-    <svg className="chart" viewBox={`0 0 ${W} ${H}`} width="100%" role="img">
-      <line className="ax" x1={6} x2={W - 6} y1={H - pb} y2={H - pb} />
-      {data.map((d, i) => {
-        let y = H - pb;
-        const x = 6 + i * bw + bw * 0.14;
-        return (
-          <g key={i}>
-            <title>{`${d.label}: ${d.balanced} of ${d.total} balanced`}</title>
-            {parts.map((p) => {
-              const h = d.total ? ((H - pb - pt) * d[p.k]) / d.total : 0;
-              y -= h;
-              return h > 0 ? (
-                <rect key={p.k} className={'bar-' + p.c} x={x} y={y} width={bw * 0.72} height={h} />
-              ) : null;
-            })}
-            <text x={x + bw * 0.36} y={H - 8} textAnchor="middle">
-              {d.label}
-            </text>
-          </g>
-        );
-      })}
-    </svg>
+    <div ref={ref} className="chart-box">
+      <svg className="chart" viewBox={`0 0 ${W} ${H}`} width={W} height={H} role="img">
+        <line className="ax" x1={6} x2={W - 6} y1={H - pb} y2={H - pb} />
+        {data.map((d, i) => {
+          let y = H - pb;
+          const x = 6 + i * bw + (bw - barW) / 2;
+          return (
+            <g key={i}>
+              <title>{`${d.label}: ${d.balanced} of ${d.total} balanced`}</title>
+              {parts.map((p) => {
+                const h = d.total ? ((H - pb - pt) * d[p.k]) / d.total : 0;
+                y -= h;
+                return h > 0 ? (
+                  <rect
+                    key={p.k}
+                    className={'bar-' + p.c}
+                    x={x}
+                    y={y}
+                    width={barW}
+                    height={h}
+                    rx={3}
+                  />
+                ) : null;
+              })}
+              {i % step === 0 && (
+                <text x={x + barW / 2} y={H - 8} textAnchor="middle">
+                  {d.label}
+                </text>
+              )}
+            </g>
+          );
+        })}
+      </svg>
+    </div>
   );
 }
 

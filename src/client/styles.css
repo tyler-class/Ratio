@@ -27,6 +27,8 @@
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --tabbar: calc(64px + var(--safe-bottom));
+  /* Space kept above a sheet, below the safe area (iOS's top bar is ~44px past it). */
+  --sheet-gap: 56px;
   color-scheme: light;
 }
 
@@ -34,22 +36,22 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
     --bg: #150f0b;
-    --surface: #201711;
-    --surface2: #2c2018;
+    --surface: #241a13;
+    --surface2: #34261c;
     --ink: #f4e9db;
-    --ink2: #b7a28d;
-    --line: #3b2c20;
+    --ink2: #cdb9a3;
+    --line: #4d3a2b;
     --accent: #e0914f;
     --accent-ink: #1b0f07;
-    --accent-soft: #3d2818;
+    --accent-soft: #4b301c;
     --good: #92b87f;
-    --good-soft: #25301f;
+    --good-soft: #2b3a24;
     --warn: #e3ae4f;
-    --warn-soft: #3a2d14;
+    --warn-soft: #463619;
     --bad: #e07d6e;
-    --bad-soft: #3d1f1a;
+    --bad-soft: #4a251f;
     --blue: #86b0cb;
-    --blue-soft: #1c2a33;
+    --blue-soft: #22343f;
     --scrim: rgb(0 0 0 / 0.6);
     --sh: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 28px rgba(0, 0, 0, 0.35);
     color-scheme: dark;
@@ -57,22 +59,22 @@
 }
 :root[data-theme='dark'] {
   --bg: #150f0b;
-  --surface: #201711;
-  --surface2: #2c2018;
+  --surface: #241a13;
+  --surface2: #34261c;
   --ink: #f4e9db;
-  --ink2: #b7a28d;
-  --line: #3b2c20;
+  --ink2: #cdb9a3;
+  --line: #4d3a2b;
   --accent: #e0914f;
   --accent-ink: #1b0f07;
-  --accent-soft: #3d2818;
+  --accent-soft: #4b301c;
   --good: #92b87f;
-  --good-soft: #25301f;
+  --good-soft: #2b3a24;
   --warn: #e3ae4f;
-  --warn-soft: #3a2d14;
+  --warn-soft: #463619;
   --bad: #e07d6e;
-  --bad-soft: #3d1f1a;
+  --bad-soft: #4a251f;
   --blue: #86b0cb;
-  --blue-soft: #1c2a33;
+  --blue-soft: #22343f;
   --scrim: rgb(0 0 0 / 0.6);
   --sh: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 28px rgba(0, 0, 0, 0.35);
   color-scheme: dark;
@@ -1147,7 +1149,9 @@ textarea.in {
   background: var(--bg);
   width: 100%;
   max-width: 660px;
-  max-height: 92dvh;
+  /* Never under the phone's status bar and the browser's blurred top bar: keep the sheet's
+     top below the safe area plus a margin. */
+  max-height: calc(100dvh - var(--safe-top) - var(--sheet-gap));
   display: flex;
   flex-direction: column;
   border-radius: 22px 22px 0 0;
@@ -1156,7 +1160,7 @@ textarea.in {
   animation: rise 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .sheet.expanded {
-  height: 92dvh;
+  height: calc(100dvh - var(--safe-top) - var(--sheet-gap));
 }
 .sh-grab {
   flex: none;
@@ -1218,11 +1222,11 @@ textarea.in {
 @media (min-width: 640px) {
   .ov {
     align-items: center;
-    padding: 24px;
+    padding: calc(24px + var(--safe-top)) 24px 24px;
   }
   .sheet {
     border-radius: 24px;
-    max-height: 90dvh;
+    max-height: calc(100dvh - var(--safe-top) - 48px);
     padding-bottom: 0;
   }
   .handle {
@@ -1620,4 +1624,151 @@ textarea.in {
 }
 .fold-chev.open {
   transform: none;
+}
+
+/* ---------- sliding toggle, filter button, filters drawer ---------- */
+
+.slide {
+  position: relative;
+  display: grid;
+  padding: 4px;
+  border-radius: 999px;
+  background: var(--surface2);
+  border: 1px solid var(--line);
+  isolation: isolate;
+}
+.slide-thumb {
+  position: absolute;
+  z-index: -1;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  border-radius: 999px;
+  background: var(--surface);
+  box-shadow: 0 1px 3px rgba(40, 20, 6, 0.16);
+  transition: transform 0.22s cubic-bezier(0.3, 0.7, 0.2, 1);
+}
+.slide button {
+  border: 0;
+  background: none;
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ink2);
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.slide button[aria-selected='true'] {
+  color: var(--accent);
+}
+.slide .n {
+  font-weight: 500;
+  opacity: 0.75;
+}
+.filter-btn {
+  position: relative;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink2);
+  display: grid;
+  place-items: center;
+}
+.filter-btn.on {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.filter-btn .badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 20px;
+  text-align: center;
+}
+.searchrow {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.searchrow .search {
+  max-width: none;
+  flex: 1;
+  min-width: 0;
+}
+@media (min-width: 768px) {
+  .searchrow .search {
+    max-width: 420px;
+    flex: 0 1 420px;
+  }
+}
+.listmeta {
+  margin-top: 12px;
+}
+.filters {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding-bottom: 4px;
+}
+.fgroup .lbl {
+  margin-bottom: 8px;
+}
+.viewswitch {
+  margin-bottom: 14px;
+  max-width: 360px;
+}
+.in.when {
+  max-width: 280px;
+}
+/* Dark: the thumb sits lighter than its track, so it reads as raised. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .slide-thumb {
+    background: #4a3727;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  }
+}
+:root[data-theme='dark'] .slide-thumb {
+  background: #4a3727;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+/* A chart drawn at its real width (charts.tsx measures it). */
+.chart-box {
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+.chart-box > svg {
+  display: block;
+}
+/* Panels size their insides to their own width (half, full or a phone), not the screen. */
+.pn {
+  container-type: inline-size;
+}
+.pn .stats {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+@container (min-width: 520px) {
+  .pn .stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@container (min-width: 900px) {
+  .pn .stats {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
 }

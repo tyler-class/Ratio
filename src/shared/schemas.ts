@@ -1,3 +1,4 @@
+import { isCurrency } from './currency';
 // Request bodies. Shared so the client and Worker agree on shapes.
 import { z } from 'zod';
 import {
@@ -41,7 +42,10 @@ export const settingsPatch = z
     methods: z.array(name(60)).max(30),
     grinders: z.array(name(60)).max(30),
     temp_unit: z.enum(['F', 'C']),
-    currency: z.string().regex(/^[A-Z]{3}$/, 'Use a 3-letter currency code like USD'),
+    currency: z
+      .string()
+      .transform((v) => v.trim().toUpperCase())
+      .refine(isCurrency, 'Use a currency code like USD, EUR or JPY'),
     time_zone: z.string().min(1).max(64),
     insights_layout: z
       .array(
