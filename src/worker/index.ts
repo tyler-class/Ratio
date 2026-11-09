@@ -9,6 +9,7 @@ import { handleAuthorize } from './consent';
 import { mcpApiHandler } from './mcp';
 import { uploadPage } from './uploads';
 import { checkIn } from './kit/telemetry';
+import { buildFlags } from '../shared/kit/build';
 import { version } from '../../package.json';
 
 /** Tables whose row counts are sent in the anonymous daily check-in (counts only). */
@@ -76,7 +77,13 @@ export default {
   // Hourly; the check-in itself goes out at most once a day, and not at all if it's turned off.
   scheduled(_controller: ScheduledController, env: Cloudflare.Env, ctx: ExecutionContext) {
     ctx.waitUntil(
-      checkIn(env.DB, { app: 'ratio', version, tables: USAGE_TABLES, buckets: [env.IMAGES] }),
+      checkIn(env.DB, {
+        app: 'ratio',
+        version,
+        tables: USAGE_TABLES,
+        buckets: [env.IMAGES],
+        build: buildFlags(),
+      }),
     );
   },
 } satisfies ExportedHandler<Cloudflare.Env>;

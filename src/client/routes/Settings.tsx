@@ -12,6 +12,7 @@ import { Icon } from '../components/Icon';
 import { ConfirmButton, InfoTip, PageHeader, Seg, Switch, TagInput } from '../components/ui';
 import { isSourceRepo, runUrl, setupUrl, UPSTREAM, useLatestVersion } from '../lib/updates';
 import { howUpdatesWork, UPDATE_TEXT, updateStatus, whatsShared } from '../kit/updates';
+import { buildFlags } from '@shared/kit/build';
 import { assistants, ASSISTANT_INTRO, CONNECTED_TEXT, signInNote } from '../kit/assistants';
 
 /** What the usage counts count, in words (matches USAGE_TABLES in the worker). */
@@ -132,7 +133,7 @@ export function Settings() {
       )}
       <Backup />
       <Updates
-        setUp={s.updates_set_up}
+        setUp={buildFlags().updatesOn || s.updates_set_up}
         onSetUp={() => actions.saveSettings({ updates_set_up: true })}
         telemetry={s.telemetry}
         onTelemetry={(telemetry) => actions.saveSettings({ telemetry })}
