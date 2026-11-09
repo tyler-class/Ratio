@@ -62,6 +62,9 @@ export function Layout() {
           <Icon name="info" size={18} /> About Ratio
         </button>
       </aside>
+      {/* A solid strip under the status bar: iOS blurs whatever scrolls beneath it in installed
+          apps, so the page scrolls under a plain bar instead (0 tall in a browser tab). */}
+      <div className="statusband" aria-hidden />
       <main className="main">
         <Outlet />
       </main>
