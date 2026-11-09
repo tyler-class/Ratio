@@ -14,6 +14,7 @@ import {
   InfoTip,
   PageHeader,
   Seg,
+  SlideToggle,
   Select,
   Switch,
   TagInput,
@@ -111,14 +112,15 @@ export function Settings() {
         </div>
       </Section>
       <Section title="Appearance">
-        <Seg
-          opts={[
-            { key: 'light', label: 'Light' },
-            { key: 'dark', label: 'Dark' },
-            { key: 'system', label: 'System' },
-          ]}
+        <SlideToggle
+          label="Appearance"
           value={theme}
-          onChange={(k) => k && setTheme(k)}
+          options={[
+            ['light', 'Light'],
+            ['dark', 'Dark'],
+            ['system', 'System'],
+          ]}
+          onChange={setTheme}
         />
       </Section>
       <Section title="Units">
