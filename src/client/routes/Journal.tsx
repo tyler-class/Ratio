@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router';
 import { dayLabel } from '@shared/logic/dates';
 import type { BrewView } from '@shared/logic/model';
 import { useModel } from '../lib/queries';
@@ -13,6 +14,25 @@ export function Journal() {
   const [limit, setLimit] = useState(40);
   const [open, setOpen] = useState<string | null>(null);
   const [filters, setFilters] = useState(false);
+  // ?rated=unrated (the "Rate your brew" notification): show only unrated brews, then drop it
+  // from the address.
+  const [params, setParams] = useSearchParams();
+  const ratedParam = params.get('rated');
+  const [seenParam, setSeenParam] = useState<string | null>(null);
+  if (ratedParam !== seenParam) {
+    setSeenParam(ratedParam);
+    if (ratedParam === 'unrated' || ratedParam === 'rated') setRated(ratedParam);
+  }
+  useEffect(() => {
+    if (ratedParam)
+      setParams(
+        (p) => {
+          p.delete('rated');
+          return p;
+        },
+        { replace: true },
+      );
+  }, [ratedParam, setParams]);
   if (!data) return null;
   const { m, state } = data;
   const now = new Date();

@@ -26,6 +26,11 @@ export function dayIn(d: Date, tz: string): string {
   return `${p.year}-${p.month}-${p.day}`;
 }
 
+/** The hour (0–23) for the given instant in tz. */
+export function hourIn(d: Date, tz: string): number {
+  return Number(parts(d, tz).hour) % 24;
+}
+
 /** Milliseconds tz is ahead of UTC at instant d. */
 function offsetMs(d: Date, tz: string): number {
   const p = parts(d, tz);

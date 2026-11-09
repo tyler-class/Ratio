@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect } from 'react';
-import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router';
+import { Link, NavLink, Outlet, useLocation, useNavigate, useSearchParams } from 'react-router';
 import { GlassTabBar, type GlassTab } from '../components/GlassTabBar';
 import { Icon } from '../components/Icon';
 import { useSheets } from '../sheets/context';
@@ -55,6 +55,20 @@ export function Layout() {
   const nav = useNavigate();
   // A tapped notification while Ratio is open: go to its screen in-app. (No app-icon badge.)
   useEffect(() => onPushOpen((url) => nav(url)), [nav]);
+  // ?bean=<id> (a notification about a bag): open its sheet, then drop it from the address.
+  const [params, setParams] = useSearchParams();
+  const beanParam = params.get('bean');
+  useEffect(() => {
+    if (!beanParam) return;
+    sheets.bean(beanParam);
+    setParams(
+      (p) => {
+        p.delete('bean');
+        return p;
+      },
+      { replace: true },
+    );
+  }, [beanParam, sheets, setParams]);
   const tab = ([to, label, icon]: GlassTab) => (
     <NavLink key={to} to={to} aria-current={active === to ? 'page' : undefined}>
       <Icon name={icon} size={20} />

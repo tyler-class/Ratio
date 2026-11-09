@@ -237,6 +237,8 @@ function Notifications() {
   }
 
   const info = pushInfo({ badge: BADGE_MEANS });
+  // Ratio's one evening notification, after the kit's "around 8 a.m." line.
+  info.lines.splice(2, 0, 'Rate your brew comes at 8 p.m. instead.');
   const blocker = state && pushBlocker(state, 'Ratio');
   const on = !!state?.on;
   const row = { borderTop: '1px solid var(--line)', marginTop: 12, paddingTop: 12 };

@@ -1,7 +1,15 @@
-// Ratio's notification on top of the Selfhost Kit's push (src/worker/kit/push.ts): "Beans running
-// low", once per low spell. The words and the rule are in src/shared/logic/notify.ts.
+// Ratio's notifications on top of the Selfhost Kit's push (src/worker/kit/push.ts): "Beans running
+// low" once per low spell, four once-per-bag ones and an evening "Rate your brew". The words and
+// the rules are in src/shared/logic/notify.ts.
 import { buildModel } from '@shared/logic/model';
-import { beansLow, beansLowNotice, lowSince, NOTIFY_KINDS } from '@shared/logic/notify';
+import {
+  beansLow,
+  beansLowNotice,
+  dueNotices,
+  lowSince,
+  NOTIFY_KINDS,
+  type Notice,
+} from '@shared/logic/notify';
 import { first, loadState } from './db';
 import {
   localDate,
@@ -38,10 +46,10 @@ async function lowSpell(db: D1Database, now: Date) {
             .bind(LOW_SINCE_KEY, since)
         : db.prepare('DELETE FROM settings WHERE key = ?').bind(LOW_SINCE_KEY)
     ).run();
-  return { runway: m.runway, since };
+  return { m, runway: m.runway, since };
 }
 
-/** Whether this device already got the notice for this spell (on any day). */
+/** Whether this device already got this notice (on any day): a spell, a bag, a day. */
 async function alreadySent(db: D1Database, device: PushDevice, kind: string, key: string) {
   return !!(await first(
     db,
@@ -52,22 +60,26 @@ async function alreadySent(db: D1Database, device: PushDevice, kind: string, key
   ));
 }
 
-/** The notification a device could get now. */
+/** The notifications a device could get now (the model is worked out once per run). */
 export function ratioPush(db: D1Database): Pick<PushJobOptions, 'build'> {
   let spell: ReturnType<typeof lowSpell> | null = null;
   return {
     async build(device: PushDevice, now: Date): Promise<PushCandidate[]> {
-      const { runway, since } = await (spell ??= lowSpell(db, now));
-      if (!since || runway == null) return [];
-      const n = beansLowNotice(runway, since);
-      if (await alreadySent(db, device, n.kind, n.key)) return [];
-      return [
-        {
+      const { m, runway, since } = await (spell ??= lowSpell(db, now));
+      const all: Notice[] = [
+        ...(since && runway != null ? [beansLowNotice(runway, since)] : []),
+        ...dueNotices(m, now, device.tz),
+      ];
+      const out: PushCandidate[] = [];
+      for (const n of all) {
+        if (await alreadySent(db, device, n.kind, n.key)) continue;
+        out.push({
           kind: n.kind,
           key: n.key,
           message: { title: n.title, body: n.body, url: n.url, tag: n.tag },
-        },
-      ];
+        });
+      }
+      return out;
     },
   };
 }
@@ -75,7 +87,7 @@ export function ratioPush(db: D1Database): Pick<PushJobOptions, 'build'> {
 /**
  * The hourly cron's notification run. Anything due that hasn't gone out yet is sent at any hour
  * from 8:00 local to midnight (no 21:00 cutoff): one turned on late in the evening still gets
- * today's.
+ * today's. "Rate your brew" isn't due before 20:00 (notify.ts).
  */
 export function runNotifications(db: D1Database, o: Partial<PushJobOptions> = {}) {
   return runPushJob(db, { ...ratioPush(db), icon: ICON, until: 24, ...o });

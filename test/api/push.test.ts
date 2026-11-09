@@ -1,5 +1,5 @@
 // Push notifications in workerd: the Selfhost Kit's crypto (RFC 8291 / RFC 8292), its timing and
-// once-a-day log, the /api/push routes, and Ratio's "Beans running low" run end to end.
+// once-a-day log, the /api/push routes, and Ratio's notifications end to end.
 import { SELF } from 'cloudflare:test';
 import { env } from 'cloudflare:test';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -426,6 +426,116 @@ describe('the notification run', () => {
       env.DB.prepare('DELETE FROM beans'),
       env.DB.prepare('DELETE FROM settings WHERE key = ?').bind(LOW_SINCE_KEY),
     ]);
+  });
+});
+
+describe('Ratio’s once-per-bag and evening notifications', () => {
+  it('sends each once, at its hour, linked to the bag or the unrated brews', async () => {
+    await clearDevices();
+    await env.DB.batch([
+      env.DB.prepare('DELETE FROM brews'),
+      env.DB.prepare('DELETE FROM beans'),
+      env.DB.prepare('DELETE FROM settings WHERE key = ?').bind(LOW_SINCE_KEY),
+    ]);
+    const api = await session();
+    const add = async (b: Record<string, unknown>) => (await api.post<Bean>('/beans', b)).data;
+    const kenya = await add({
+      name: 'Kenya Gichathaini',
+      status: 'resting',
+      bag_g: 250,
+      received_on: '2031-08-05',
+      rest_until: '2031-08-12',
+    });
+    const guji = await add({
+      name: 'Ethiopia Guji',
+      status: 'freezing',
+      bag_g: 250,
+      received_on: '2031-05-13', // 91 days before Aug 12
+    });
+    const ordered = await add({ name: 'Colombia Pink Bourbon', status: 'ordered', bag_g: 250 });
+    await env.DB.prepare('UPDATE beans SET created_at = ? WHERE id = ?')
+      .bind('2031-08-04T10:00:00.000Z', ordered.id) // 8 days before Aug 12
+      .run();
+    const lis = await device('Europe/Lisbon'); // UTC+1 in August
+    const svc = pushService();
+    const run = (iso: string) =>
+      runNotifications(env.DB, { now: new Date(iso), fetcher: svc.fetcher });
+    const got = async () =>
+      (await Promise.all(svc.got.splice(0).map((r) => decrypt(lis.b, r.body)))).map(
+        (p) => `${p.title} | ${p.body} | ${p.url}`,
+      );
+
+    // 7:41 in Lisbon: too early.
+    await run('2031-08-12T06:41Z');
+    expect(await got()).toEqual([]);
+    // 8:41: the bag that's ready, the order and the freezer.
+    await run('2031-08-12T07:41Z');
+    expect(await got()).toEqual([
+      `Bag ready to drink | Kenya Gichathaini is ready to drink. | /beans?bean=${kenya.id}`,
+      `Order arrived? | Did Colombia Pink Bourbon arrive? Mark it in. | /beans?bean=${ordered.id}`,
+      `Freezer reminder | Ethiopia Guji has been frozen for 3 months. | /beans?bean=${guji.id}`,
+    ]);
+
+    // Two brews that morning, one rated. 19:41: not yet; 20:41: the nudge; 22:41: not again.
+    for (const rating of [null, 4])
+      await api.post('/brews', {
+        bean_id: kenya.id,
+        dose_g: 20,
+        rating,
+        brewed_at: '2031-08-12T06:30:00.000Z',
+      });
+    await run('2031-08-12T18:41Z');
+    expect(await got()).toEqual([]);
+    await run('2031-08-12T19:41Z');
+    expect(await got()).toEqual([
+      'Rate your brew | 1 brew today isn’t rated yet. | /journal?rated=unrated',
+    ]);
+    await run('2031-08-12T21:41Z');
+    expect(await got()).toEqual([]);
+
+    // The next days: none of the bags again, while all three still qualify.
+    for (const day of ['13', '14', '15', '20']) await run(`2031-08-${day}T19:41Z`);
+    expect(await got()).toEqual([]);
+
+    // Open the bag and brew it down: one "almost empty" (the 28th leaves 40 g, 2 brews; sent a day
+    // late on the 29th, with 30 g left), then never again.
+    await api.patch(`/beans/${kenya.id}`, { status: 'drinking' });
+    for (let d = 21; d <= 29; d++)
+      await api.post('/brews', {
+        bean_id: kenya.id,
+        dose_g: 20,
+        rating: 4,
+        brewed_at: `2031-08-${d}T06:30:00.000Z`,
+      });
+    await run('2031-08-29T07:41Z');
+    expect(await got()).toEqual([
+      `Bag almost empty | Kenya Gichathaini has about 2 brews left. | /beans?bean=${kenya.id}`,
+    ]);
+    await run('2031-08-30T07:41Z');
+    expect(await got()).toEqual([]);
+
+    // Each kind has its own switch.
+    await env.DB.prepare('UPDATE selfhost_push_devices SET prefs = ? WHERE id = ?')
+      .bind(JSON.stringify({ enabled: true, rate: false }), lis.d.id)
+      .run();
+    const unrated = await api.post('/brews', {
+      bean_id: guji.id,
+      dose_g: 18,
+      brewed_at: '2031-08-31T06:30:00.000Z',
+    });
+    expect(unrated.status).toBe(201);
+    await run('2031-08-31T20:41Z');
+    expect(await got()).toEqual([]);
+    // Back on: it comes.
+    await env.DB.prepare('UPDATE selfhost_push_devices SET prefs = ? WHERE id = ?')
+      .bind(JSON.stringify({ enabled: true }), lis.d.id)
+      .run();
+    await run('2031-08-31T21:41Z');
+    expect(await got()).toEqual([
+      'Rate your brew | 1 brew today isn’t rated yet. | /journal?rated=unrated',
+    ]);
+
+    await env.DB.batch([env.DB.prepare('DELETE FROM brews'), env.DB.prepare('DELETE FROM beans')]);
   });
 });
 
