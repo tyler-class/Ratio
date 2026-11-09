@@ -1,11 +1,12 @@
 import { useEffect, useLayoutEffect } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router';
-import { Icon, type IconName } from '../components/Icon';
+import { GlassTabBar, type GlassTab } from '../components/GlassTabBar';
+import { Icon } from '../components/Icon';
 import { useSheets } from '../sheets/context';
 import { useTabSwipe } from '../lib/tabSwipe';
 import { onPushOpen } from '../kit/push';
 
-const TABS: [string, string, IconName][] = [
+const TABS: GlassTab[] = [
   ['/', 'Home', 'home'],
   ['/journal', 'Journal', 'book'],
   ['/beans', 'Beans', 'bean'],
@@ -38,8 +39,8 @@ export function Brand() {
 }
 
 /**
- * Phones (and the installed app): tabs along the bottom, a floating Log button, and a
- * solid band under the status bar. 768px and up: a sidebar with the same tabs.
+ * Phones (and the installed app): tabs in a floating glass capsule along the bottom, a floating
+ * Log button, and a solid band under the status bar. 768px and up: a sidebar with the same tabs.
  */
 export function Layout() {
   const { pathname } = useLocation();
@@ -54,7 +55,7 @@ export function Layout() {
   const nav = useNavigate();
   // A tapped notification while Ratio is open: go to its screen in-app. (No app-icon badge.)
   useEffect(() => onPushOpen((url) => nav(url)), [nav]);
-  const tab = ([to, label, icon]: (typeof TABS)[number]) => (
+  const tab = ([to, label, icon]: GlassTab) => (
     <NavLink key={to} to={to} aria-current={active === to ? 'page' : undefined}>
       <Icon name={icon} size={20} />
       {label}
@@ -85,9 +86,7 @@ export function Layout() {
       <button type="button" className="fab" aria-label="Log a brew" onClick={() => sheets.log()}>
         <Icon name="plus" size={28} strokeWidth={2} />
       </button>
-      <nav className="tabbar" aria-label="Main">
-        <div className="tabbar-in">{TABS.map(tab)}</div>
-      </nav>
+      <GlassTabBar tabs={TABS} active={active} />
     </div>
   );
 }

@@ -31,7 +31,23 @@
     -apple-system, BlinkMacSystemFont, 'SF Pro Text', Inter, 'Segoe UI', system-ui, sans-serif;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
-  --tabbar: calc(64px + var(--safe-bottom));
+  /* Phone tab bar geometry: its height, its gap above the screen bottom (just over the home
+     indicator), and the room content and bottom-pinned things leave for it. */
+  --tabbar-h: 62px;
+  --tabbar-gap: max(calc(var(--safe-bottom) - 8px), 12px);
+  --tabbar-clear: calc(var(--tabbar-h) + var(--tabbar-gap));
+  /* Phone tab bar: a floating glass capsule. Fill, a near-solid fill for reduced transparency,
+     the specular rim (top bright, bottom faint), a hairline edge, the drop shadow, the lens behind
+     the current tab, and the labels not chosen (stronger than --ink2 to read on glass). */
+  --glass-fill: rgb(255 251 245 / 0.66);
+  --glass-solid: rgb(247 241 231 / 0.97);
+  --glass-rim-top: rgb(255 255 255 / 0.95);
+  --glass-rim-low: rgb(255 255 255 / 0.35);
+  --glass-edge: rgb(60 32 12 / 0.1);
+  --glass-shadow: 0 10px 30px rgb(60 32 12 / 0.14), 0 2px 6px rgb(60 32 12 / 0.07);
+  --glass-lens: rgb(60 32 12 / 0.07);
+  --glass-lens-held: rgb(255 255 255 / 0.55);
+  --glass-label: #5a4535;
   /* Space kept above a sheet, below the safe area (iOS's top bar is ~44px past it). */
   --sheet-gap: 56px;
   color-scheme: light;
@@ -63,6 +79,15 @@
     --blue-ink: var(--blue);
     --scrim: rgb(0 0 0 / 0.6);
     --sh: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 28px rgba(0, 0, 0, 0.35);
+    --glass-fill: rgb(36 26 19 / 0.64);
+    --glass-solid: rgb(30 22 16 / 0.97);
+    --glass-rim-top: rgb(255 240 225 / 0.2);
+    --glass-rim-low: rgb(255 240 225 / 0.06);
+    --glass-edge: rgb(255 240 225 / 0.08);
+    --glass-shadow: 0 10px 30px rgb(0 0 0 / 0.5), 0 2px 6px rgb(0 0 0 / 0.32);
+    --glass-lens: rgb(255 240 225 / 0.1);
+    --glass-lens-held: rgb(255 240 225 / 0.16);
+    --glass-label: #e0cfbb;
     color-scheme: dark;
   }
 }
@@ -90,6 +115,15 @@
   --blue-ink: var(--blue);
   --scrim: rgb(0 0 0 / 0.6);
   --sh: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 28px rgba(0, 0, 0, 0.35);
+  --glass-fill: rgb(36 26 19 / 0.64);
+  --glass-solid: rgb(30 22 16 / 0.97);
+  --glass-rim-top: rgb(255 240 225 / 0.2);
+  --glass-rim-low: rgb(255 240 225 / 0.06);
+  --glass-edge: rgb(255 240 225 / 0.08);
+  --glass-shadow: 0 10px 30px rgb(0 0 0 / 0.5), 0 2px 6px rgb(0 0 0 / 0.32);
+  --glass-lens: rgb(255 240 225 / 0.1);
+  --glass-lens-held: rgb(255 240 225 / 0.16);
+  --glass-label: #e0cfbb;
   color-scheme: dark;
 }
 
@@ -199,45 +233,132 @@ h3,
 .main {
   max-width: 1040px;
   margin: 0 auto;
-  padding: 8px 16px calc(var(--tabbar) + 88px);
+  padding: 8px 16px calc(var(--tabbar-clear) + 88px);
 }
 .side {
   display: none;
 }
-.tabbar {
+/* The floating glass tab bar (phones). Content scrolls underneath and shows blurred through. */
+.glass-bar {
   position: fixed;
-  inset: auto 0 0 0;
   z-index: 30;
-  border-top: 1px solid var(--line);
-  background: color-mix(in srgb, var(--bg) 94%, transparent);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  padding-bottom: var(--safe-bottom);
+  left: 16px;
+  right: 16px;
+  bottom: var(--tabbar-gap);
+  height: var(--tabbar-h);
+  max-width: 480px;
+  margin-inline: auto;
+  border-radius: 999px;
+  background: var(--glass-fill);
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  backdrop-filter: blur(18px) saturate(180%);
+  box-shadow:
+    inset 0 1px 0 var(--glass-rim-top),
+    0 0 0 0.5px var(--glass-edge),
+    var(--glass-shadow);
+  /* Drags on the bar move the lens: never scroll, zoom, select or long-press menu. */
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
-.tabbar-in {
+/* The specular rim: a gradient border, bright along the top, faint round the bottom. */
+.glass-bar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    180deg,
+    var(--glass-rim-top),
+    transparent 38%,
+    transparent 62%,
+    var(--glass-rim-low)
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+  pointer-events: none;
+}
+.glass-in {
+  position: relative;
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  max-width: 640px;
-  margin: 0 auto;
-  padding: 8px 0;
+  height: 100%;
+  padding: 0 4px;
 }
-.tabbar a {
+/* The lens behind the current tab. Its transform and width are set from script. */
+.glass-lens {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 0;
+  border-radius: 999px;
+  background: var(--glass-lens);
+  box-shadow: inset 0 1px 0 var(--glass-rim-low);
+  transform-origin: center;
+  will-change: transform;
+  pointer-events: none;
+}
+/* Settling on a tab: a spring with a slight overshoot. */
+.glass-lens[data-motion='spring'] {
+  transition:
+    transform 0.5s cubic-bezier(0.34, 1.45, 0.64, 1),
+    width 0.5s cubic-bezier(0.34, 1.45, 0.64, 1),
+    background-color 0.25s ease,
+    box-shadow 0.25s ease;
+}
+/* Held or dragged: it follows the finger closely and turns to brighter, raised glass. */
+.glass-lens[data-motion='follow'] {
+  transition:
+    transform 0.1s cubic-bezier(0.2, 0.8, 0.2, 1),
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
+  background: var(--glass-lens-held);
+  box-shadow:
+    inset 0 1px 0 var(--glass-rim-top),
+    inset 0 -1px 0 var(--glass-rim-low),
+    0 0 0 0.5px var(--glass-edge),
+    0 4px 14px rgb(0 0 0 / 0.14);
+}
+.glass-tab {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
-  font-size: 11px;
+  justify-content: center;
+  gap: 2px;
+  min-width: 0;
+  font-size: 10.5px;
   font-weight: 600;
-  color: var(--ink2);
+  color: var(--glass-label);
   text-decoration: none;
+  -webkit-user-drag: none;
 }
-.tabbar a[aria-current='page'] {
+/* The current tab, or the one under the lens mid-drag. */
+.glass-tab[data-lit] {
   color: var(--accent);
+}
+.glass-tab:focus-visible {
+  outline-offset: -3px;
+  border-radius: 999px;
+}
+@media (prefers-reduced-transparency: reduce) {
+  .glass-bar {
+    background: var(--glass-solid);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
 }
 .fab {
   position: fixed;
   right: 18px;
-  bottom: calc(var(--tabbar) + 16px);
+  bottom: calc(var(--tabbar-clear) + 14px);
   z-index: 30;
   width: 58px;
   height: 58px;
@@ -257,7 +378,7 @@ h3,
     padding-left: 240px;
   }
   .appbar,
-  .tabbar,
+  .glass-bar,
   .fab {
     display: none;
   }
@@ -1254,7 +1375,7 @@ textarea.in {
   position: fixed;
   left: 0;
   right: 0;
-  bottom: calc(var(--tabbar) + 90px);
+  bottom: calc(var(--tabbar-clear) + 88px);
   z-index: 80;
   display: flex;
   justify-content: center;
