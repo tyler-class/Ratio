@@ -1324,6 +1324,11 @@ textarea.in {
 }
 .link-row span {
   flex: 1;
+  text-underline-offset: 4px;
+}
+.link-row:hover span,
+.link-row:focus-visible span {
+  text-decoration: underline;
 }
 .link-row svg:last-child {
   color: var(--ink2);

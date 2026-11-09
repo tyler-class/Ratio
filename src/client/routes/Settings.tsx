@@ -9,14 +9,11 @@ import { useSheets } from '../sheets/context';
 import { useToast } from '../components/Toast';
 import { Icon } from '../components/Icon';
 import { ConfirmButton, InfoTip, PageHeader, Seg, Switch, TagInput } from '../components/ui';
-import {
-  isNewer,
-  isSourceRepo,
-  runUrl,
-  setupUrl,
-  UPSTREAM,
-  useLatestVersion,
-} from '../lib/updates';
+import { isSourceRepo, runUrl, setupUrl, UPSTREAM, useLatestVersion } from '../lib/updates';
+import { howUpdatesWork, UPDATE_TEXT, updateStatus, whatsShared } from '../kit/updates';
+
+/** What the usage counts count, in words (matches USAGE_TABLES in the worker). */
+const USAGE_COUNTED = 'roasters, beans, brews and photos';
 
 function Section({
   title,
@@ -403,55 +400,44 @@ function Updates({
   onTelemetry: (on: boolean) => void;
 }) {
   const latest = useLatestVersion();
-  const current = __APP_VERSION__;
   const repo = __SOURCE_REPO__;
   const isSource = isSourceRepo(repo, UPSTREAM);
-  const newer = latest.data && isNewer(latest.data, current) ? latest.data : null;
-  const status = newer
-    ? `Ratio ${newer} is available. You have ${current}.`
-    : latest.isError
-      ? `Ratio ${current}. Couldn’t check for a newer version.`
-      : latest.data
-        ? `Ratio ${current}, up to date.`
-        : `Ratio ${current}.`;
+  const status = updateStatus('Ratio', __APP_VERSION__, latest.data, latest.isError);
+  const how = howUpdatesWork('Ratio');
+  const shared = whatsShared('Ratio', USAGE_COUNTED, true);
   return (
     <Section
-      title="Updates"
+      title={UPDATE_TEXT.heading}
       trailing={
         !isSource && (
-          <InfoTip label="How updates work">
-            <p>Updates take two steps, both in your own accounts:</p>
+          <InfoTip label={UPDATE_TEXT.howUpdatesWork}>
+            <p>{how.intro}</p>
             <ol style={{ margin: '0 0 8px', paddingLeft: 18 }}>
-              <li>
-                An update workflow in your GitHub copy brings in the latest Ratio every Monday.
-                GitHub needs you to add it once: Set up opens it ready to commit.
-              </li>
-              <li>Cloudflare deploys your copy every time it changes. That part is already on.</li>
+              {how.steps.map((t) => (
+                <li key={t}>{t}</li>
+              ))}
             </ol>
-            <p>
-              Your data lives in your database and storage, so updates don’t touch it. Changes you
-              made to the code in your copy are replaced.
-            </p>
+            <p>{how.outro}</p>
           </InfoTip>
         )
       }
     >
-      <p style={{ marginTop: 0, color: newer ? 'var(--ink)' : undefined }} className="sub">
-        {status}
+      <p style={{ marginTop: 0, color: status.newer ? 'var(--ink)' : undefined }} className="sub">
+        {status.text}
       </p>
       {isSource ? null : !repo ? (
-        <p className="sub">Deployed by hand: git pull, then npm run deploy.</p>
+        <p className="sub">{UPDATE_TEXT.byHand}</p>
       ) : (
         <>
           <div className="flexrow">
             {setUp ? (
               <a
-                className={newer ? 'btn primary' : 'btn'}
+                className={status.newer ? 'btn primary' : 'btn'}
                 href={runUrl(repo)}
                 target="_blank"
                 rel="noreferrer"
               >
-                <Icon name="reset" size={16} /> Update now
+                <Icon name="reset" size={16} /> {UPDATE_TEXT.updateNow}
               </a>
             ) : (
               <a
@@ -461,7 +447,7 @@ function Updates({
                 rel="noreferrer"
                 onClick={onSetUp}
               >
-                <Icon name="github" size={16} /> Set up automatic updates
+                <Icon name="github" size={16} /> {UPDATE_TEXT.setUp}
               </a>
             )}
             <a
@@ -476,13 +462,13 @@ function Updates({
           <p className="sub" style={{ marginBottom: 0 }}>
             {setUp ? (
               <>
-                Opens GitHub: click Run workflow.{' '}
+                {UPDATE_TEXT.updateNowHint}{' '}
                 <a href={setupUrl(repo, __SOURCE_BRANCH__)} target="_blank" rel="noreferrer">
-                  Set up again
+                  {UPDATE_TEXT.setUpAgain}
                 </a>
               </>
             ) : (
-              'Opens GitHub: click Commit changes. It updates now, then every Monday.'
+              UPDATE_TEXT.setUpHint
             )}
           </p>
         </>
@@ -492,23 +478,18 @@ function Updates({
         style={{ borderTop: '1px solid var(--line)', marginTop: 14, paddingTop: 14 }}
       >
         <span className="grow">
-          Share anonymous usage counts
-          <InfoTip label="What’s shared">
-            <p>Once a day this copy sends Ratio’s developer:</p>
+          {UPDATE_TEXT.telemetry}
+          <InfoTip label={UPDATE_TEXT.whatsShared}>
+            <p>{shared.intro}</p>
             <ul>
-              <li>a random id this copy made for itself</li>
-              <li>its version</li>
-              <li>how many roasters, bags, brews and photos it has (counts only)</li>
-              <li>how many files are in its photo storage (one total)</li>
-              <li>whether automatic updates are on</li>
+              {shared.items.map((t) => (
+                <li key={t}>{t}</li>
+              ))}
             </ul>
-            <p>
-              Never names, notes, photos or anything you type, and no IP address is kept. It shows
-              how many copies are in use, to decide what to work on next.
-            </p>
+            <p>{shared.outro}</p>
           </InfoTip>
         </span>
-        <Switch on={telemetry} onChange={onTelemetry} label="Share anonymous usage counts" />
+        <Switch on={telemetry} onChange={onTelemetry} label={UPDATE_TEXT.telemetry} />
       </div>
     </Section>
   );

@@ -4,6 +4,8 @@ A calm coffee brewing log you host yourself. Track the bags you buy, log every b
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/tyler-class/ratio)
 
+<!-- 📸 SCREENSHOT docs/screenshots/hero.png: Ratio on a phone: a bag's page with its dial-in table and recent brews -->
+
 - **Log a brew in seconds.** Pick the bag and Ratio fills in your last recipe: grind, dose, ratio, temperature. Lock the ratio and the water follows the dose. Rate it now or later.
 - **Dial in.** Each bag shows how every grind setting rated, your best recipe, and last time’s “next time” note.
 - **Every bag, start to finish.** Ordered → resting or freezing → drinking → finished, with dates stamped as you go. See grams left, cups left, cost per cup, and how long your stock will last.
@@ -15,27 +17,116 @@ A calm coffee brewing log you host yourself. Track the bags you buy, log every b
 
 One deployment is one coffee log.
 
-## Deploy
+<!-- kit:readme:start -->
+<!-- Written by the Selfhost Kit (kit/docs/readme-install.md): edit it there. -->
 
-### One click
+## Install
 
-1. Click **Deploy to Cloudflare** above and sign in to Cloudflare (a free account works).
-2. Cloudflare copies this repo to your GitHub or GitLab account, creates the database, image bucket and key-value store, and asks for **APP_PASSWORD**. That’s the password you’ll sign in with. Pick something long.
-3. When the deploy finishes, open the `*.workers.dev` link, sign in, and add your first bag.
+You need two free accounts, and about five minutes.
 
-Cloudflare runs the database migrations on every deploy (`npm run deploy`), before the new version goes live.
+### 1. Have a Cloudflare account
 
-### By hand
+Ratio runs on your own Cloudflare account. The free plan is plenty. If you don't have one, [sign up](https://dash.cloudflare.com/sign-up) and confirm your email.
 
-```sh
-git clone https://github.com/tyler-class/ratio.git && cd ratio
-npm install
-npx wrangler login
-npx wrangler secret put APP_PASSWORD
-npm run deploy
-```
+<!-- 📸 SCREENSHOT docs/screenshots/install-1-cloudflare-signup.png: Cloudflare's sign-up page -->
 
-`npm run deploy` builds the app, applies migrations to the remote database, then deploys the Worker (on the very first deploy, when the database doesn’t exist yet, it deploys first and then migrates). Wrangler creates the D1 database, the R2 bucket (`ratio-images`) and the KV namespace on the first deploy. If your Wrangler version asks you to create them yourself, run `npx wrangler d1 create ratio`, `npx wrangler r2 bucket create ratio-images` and `npx wrangler kv namespace create OAUTH_KV`, then add the ids it prints to `wrangler.jsonc`.
+### 2. Have a GitHub account
+
+The Deploy button makes your own copy of Ratio's code in your GitHub account, so you can keep it updated. If you don't have one, [sign up](https://github.com/signup).
+
+### 3. Let Cloudflare use your GitHub
+
+Cloudflare needs its **Cloudflare Workers and Pages** app installed on your GitHub account to create your copy and deploy it.
+
+1. Open [github.com/apps/cloudflare-workers-and-pages](https://github.com/apps/cloudflare-workers-and-pages) and click **Install** (or **Configure** if it's already installed).
+2. Choose your account.
+3. Pick **All repositories**. That's simplest, because the Deploy button creates a new one. If you'd rather limit it, choose **Only select repositories** and come back to add your Ratio copy after step 4.
+4. Click **Install**.
+
+<!-- 📸 SCREENSHOT docs/screenshots/install-3-github-app.png: GitHub's install page for Cloudflare Workers and Pages, with All repositories selected -->
+
+You can also do this in the middle of the next step: Cloudflare asks you to connect GitHub if you haven't.
+
+### 4. Click Deploy
+
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/tyler-class/ratio)
+
+Sign in to Cloudflare if it asks. You land on a setup page.
+
+<!-- 📸 SCREENSHOT docs/screenshots/install-4-deploy-page.png: Cloudflare's "Create an application" page for Ratio -->
+
+### 5. Check the names (most people keep the defaults)
+
+- **Git account**: your GitHub account.
+- **Repository name**: what your copy is called on GitHub. Leave **Create private Git repository** ticked to keep it private.
+- **Project name**: the Worker's name, which is also in your address: `https://ratio.<your-subdomain>.workers.dev`.
+- **Database and storage names**: what Cloudflare calls the storage it creates for you. Keep them.
+
+### 6. Set your password
+
+Under **Variables and secrets**, fill in **APP_PASSWORD**: the one password everyone in your household uses to sign in. Pick something long. You can change it later (see [Change your password](#change-your-password)), but set it now.
+
+<!-- 📸 SCREENSHOT docs/screenshots/install-6-password.png: The APP_PASSWORD field on the setup page -->
+
+### 7. Create and deploy
+
+Click **Create and deploy**. Cloudflare copies the code to your GitHub, creates the storage and builds Ratio. It takes a minute or two. When the build log finishes, your address is at the end of it, and on the Worker's page under **Domains**.
+
+<!-- 📸 SCREENSHOT docs/screenshots/install-7-build-done.png: A finished build log with the workers.dev address at the end -->
+
+Open it, sign in with your password, and you're done. Bookmark it, or add it to your phone's home screen.
+
+<!-- 📸 SCREENSHOT docs/screenshots/install-7-signed-in.png: Ratio right after signing in -->
+
+### 8. Set up automatic updates (recommended)
+
+Your copy updates itself every Monday once you allow it. That takes one click, once:
+
+1. In Ratio, open **Settings → Updates** and choose **Set up automatic updates**.
+2. GitHub opens with the update file filled in. Click **Commit changes**.
+
+That brings in the latest Ratio straight away, then every week. See [Updates](#updates) for how it works.
+
+<!-- 📸 SCREENSHOT docs/screenshots/install-8-updates.png: Settings → Updates with the Set up automatic updates button -->
+<!-- 📸 SCREENSHOT docs/screenshots/install-8-commit.png: GitHub's new-file page with the update file filled in, and the Commit changes button -->
+
+## Updates
+
+Updates take two steps, both in your own accounts. Ratio never deploys to your Cloudflare directly.
+
+1. **Ratio → your GitHub copy.** The update workflow you added in step 8 brings in the latest code every Monday. To update now, open **Settings → Updates → Update now** and click **Run workflow** on GitHub. Settings also tells you when a newer version is out.
+2. **Your GitHub copy → your Cloudflare.** Cloudflare builds and deploys every change to your copy, migrating the database first. This was switched on in step 7.
+
+Your data lives in the database and file storage, not here, so it isn't touched. An update replaces the code in your copy, so changes you made to it are overwritten. Your copy's own name and storage settings are kept.
+
+Deployed by hand instead? `git pull`, then `npm run deploy`.
+
+## Change your password
+
+1. In Cloudflare, open **Compute → Workers & Pages** and choose **ratio**.
+2. Open the **Settings** tab. Under **Variables and Secrets**, find **APP_PASSWORD** (type **Secret**) and click its pencil icon.
+3. Type the new password and save. You can't see the current one, only set a new one.
+
+Everyone is signed out and signs in again with the new password.
+
+<!-- 📸 SCREENSHOT docs/screenshots/password-1-secrets.png: The Variables and Secrets list with APP_PASSWORD and its pencil icon -->
+
+## Use your own domain (advanced)
+
+Your address starts as `https://ratio.<your-subdomain>.workers.dev`. Two ways to change it:
+
+- **Rename your workers.dev subdomain.** In Cloudflare, open **Compute → Workers & Pages**. Your subdomain is shown on the right, with **Change**. It applies to every Worker in your account, so all your apps move together.
+- **Give Ratio its own address on a domain you own**, like `ratio.example.com`. The domain has to be on Cloudflare. Open the Worker, go to **Settings → Domains & Routes → Add → Custom domain**, and enter the address. Cloudflare sets up DNS and the certificate. Repeat for each app to give each one its own subdomain.
+
+<!-- 📸 SCREENSHOT docs/screenshots/domain-1-custom-domain.png: Settings → Domains & Routes → Add → Custom domain -->
+
+If you connected an AI assistant, connect it again with the new address.
+
+## Anonymous usage counts
+
+Once a day your copy tells Ratio's developer that it exists: a random id it made for itself, its version, how many roasters, beans, brews and photos it has (counts only), how many files it stores, and whether automatic updates are on. Never names, contents or anything you type, and no IP address is kept. It shows how many copies are in use. Turn it off in **Settings → Updates → Share anonymous usage counts**.
+
+<!-- kit:readme:end -->
 
 ## Use it on your phone
 
@@ -46,7 +137,7 @@ Open your Ratio link on the phone, then:
 
 ## Connect an AI assistant
 
-Ratio includes an [MCP](https://modelcontextprotocol.io) server at `https://<your-ratio>/mcp`. Open **Settings → Connect an AI assistant** to copy your URL and see steps for Claude, ChatGPT, Claude Code and others. When an assistant connects, Ratio shows a sign-in page; enter your password to approve it. **Disconnect all** in the same place revokes every assistant.
+Ratio includes an [MCP](https://modelcontextprotocol.io) server at `https://<your-ratio>/mcp`. Open **Settings → Connect an AI assistant** to copy your URL and see steps for Claude, ChatGPT, Claude Code and others. When an assistant connects, Ratio shows a sign-in page; enter your password to approve it. **Disconnect all** in the same place revokes every assistant. Changing the password signs everyone out, but connected assistants keep working until you disconnect them.
 
 Assistants get these tools:
 
@@ -80,36 +171,23 @@ Prompts that would change data ask before they do.
 
 Assistants can’t pass a photo from the chat into a tool, so for “add this photo to the Sumatra” they give you an upload link to tap instead; the photo lands on the bag as soon as it uploads. Names can be loose (“the kenya”, “sey gachatha”); when a name is ambiguous the assistant is told the options. Times without an offset are read in your time zone, which the app reports automatically.
 
-## Change the password
-
-Set a new `APP_PASSWORD`, either in the Cloudflare dashboard under **Workers & Pages → ratio → Settings → Variables and Secrets**, or with:
-
-```sh
-npx wrangler secret put APP_PASSWORD
-```
-
-Everyone is signed out and signs in again with the new password. Connected AI assistants keep working until you disconnect them.
-
 ## Back up and restore
 
 **Settings → Backup → Download backup** saves every roaster, bag and brew as one JSON file. **Restore from backup** replaces everything with a backup’s contents. Photos live in the R2 bucket and aren’t in the file; restoring into the same deployment keeps them attached.
 
-## Update your copy
+## Deploy by hand
 
-Updates come in two steps, both in your own accounts: Ratio’s latest code goes into **your GitHub copy**, and Cloudflare deploys **your copy** whenever it changes. Ratio never deploys to your Cloudflare account directly.
+If you’d rather not use the button, or want to work on the code:
 
-- **Your copy → your Cloudflare** is already on. The Deploy button set Cloudflare to build and deploy every change to your copy’s `main` branch (migrating the database first).
-- **Ratio → your copy** needs one click to turn on. The Deploy button doesn’t copy GitHub workflow files, so open **Settings → Updates** and choose **Set up automatic updates**. GitHub opens with the update workflow filled in; click **Commit changes**. That brings in the latest Ratio straight away, then every Monday.
+```sh
+git clone https://github.com/tyler-class/ratio.git && cd ratio
+npm install
+npx wrangler login
+npx wrangler secret put APP_PASSWORD
+npm run deploy
+```
 
-To update before Monday, choose **Update now** in Settings and click **Run workflow** on GitHub. Settings also shows when a newer Ratio is out.
-
-Your data is in the database and R2, not the repo, so updates don’t touch it. An update replaces the app’s code with Ratio’s, so changes you made to your copy’s code are overwritten. Two things are kept: your `.github/workflows` (GitHub doesn’t let a workflow change them, so if Ratio’s change, copy them over by hand) and a `wrangler.jsonc` that has your database id in it.
-
-If you deployed by hand, `git pull` and `npm run deploy`.
-
-## Anonymous usage counts
-
-Once a day your copy tells Ratio’s developer that it exists: a random id it made for itself, its version, how many roasters, bags, brews and photos it has, how many files are in its photo storage, and whether automatic updates are on. Never names, notes, photos or anything you type, and no IP address is kept. It shows how many copies are in use. Turn it off in **Settings → Updates → Share anonymous usage counts**.
+`npm run deploy` builds the app, applies migrations to the remote database, then deploys the Worker (on the very first deploy, when the database doesn’t exist yet, it deploys first and then migrates). Wrangler creates the D1 database, the R2 bucket (`ratio-images`) and the KV namespace on the first deploy. If your Wrangler version asks you to create them yourself, run `npx wrangler d1 create ratio`, `npx wrangler r2 bucket create ratio-images` and `npx wrangler kv namespace create OAUTH_KV`, then add the ids it prints to `wrangler.jsonc`.
 
 ## Local development
 

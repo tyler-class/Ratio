@@ -1,56 +1,40 @@
-import { useState } from 'react';
-import { checkForUpdate } from '../lib/pwa';
+import { aboutLinks, BUILT_BY, type AboutLinkKind } from '../kit/about';
 import { Icon, type IconName } from '../components/Icon';
-import { useToast } from '../components/Toast';
 import { Sheet } from '../components/ui';
 import { useSheets } from './context';
 
-const LINKS: [string, string, IconName][] = [
-  ['https://github.com/tyler-class/ratio', 'Ratio on GitHub', 'github'],
-  ['mailto:ratio@tylerclass.net', 'Questions or help? ratio@tylerclass.net', 'mail'],
-  ['https://ko-fi.com/tylerclass', 'Ratio is free. Buy me a coffee to keep it that way ☕', 'coin'],
-  ['https://tylerclass.net', 'tylerclass.net', 'link'],
-];
+const LINKS = aboutLinks({
+  title: 'Ratio',
+  repo: 'tyler-class/ratio',
+  email: 'ratio@tylerclass.net',
+});
+const ICONS: Record<AboutLinkKind, IconName> = {
+  github: 'github',
+  email: 'mail',
+  coffee: 'coffee',
+  site: 'link',
+};
 
+/** About Ratio: version, what it is, who built it, and links (Selfhost Kit layout). */
 export function AboutSheet() {
   const sheets = useSheets();
-  const toast = useToast();
-  const [checking, setChecking] = useState(false);
   return (
     <Sheet title="About Ratio" sub={`Version ${__APP_VERSION__}`} onClose={sheets.close}>
       <p style={{ marginTop: 0 }}>
         Ratio is a free, open-source coffee log: roasters, bags and every brew, with the numbers to
         dial in your next cup. It runs on your own Cloudflare account, so your data stays yours.
       </p>
-      <p className="sub">Built by Tyler Class.</p>
-      <button
-        type="button"
-        className="btn sm"
-        disabled={checking}
-        onClick={async () => {
-          setChecking(true);
-          try {
-            if ((await checkForUpdate()) === 'latest')
-              toast({ text: 'You’re on the latest version.' });
-          } catch {
-            toast({ text: 'Couldn’t check. Are you online?', tone: 'bad' });
-          } finally {
-            setChecking(false);
-          }
-        }}
-      >
-        <Icon name="reset" size={15} /> {checking ? 'Checking…' : 'Check for updates'}
-      </button>
+      <p className="sub">{BUILT_BY}</p>
       <div style={{ marginTop: 8 }}>
-        {LINKS.map(([href, label, icon]) => (
+        {LINKS.map((l) => (
           <a
-            key={href}
+            key={l.href}
             className="link-row"
-            href={href}
-            {...(href.startsWith('mailto:') ? {} : { target: '_blank', rel: 'noreferrer' })}
+            href={l.href}
+            {...(l.external ? { target: '_blank', rel: 'noreferrer' } : {})}
           >
-            <Icon name={icon} size={18} />
-            <span>{label}</span>
+            <Icon name={ICONS[l.kind]} size={18} />
+            <span>{l.label}</span>
             <Icon name="chevRight" size={16} />
           </a>
         ))}
