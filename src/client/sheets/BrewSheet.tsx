@@ -79,7 +79,7 @@ export function RateFields({ v, set }: { v: RateValues; set: (p: Partial<RateVal
           label="Extraction"
           value={v.extraction}
           allowClear
-          options={EXTRACTION.map((e) => [e.key, e.label] as const)}
+          options={EXTRACTION.map((e) => [e.key, e.label, e.tone] as const)}
           onChange={(extraction) => set({ extraction })}
         />
       </Field>

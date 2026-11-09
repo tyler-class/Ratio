@@ -362,16 +362,13 @@ describe('the notification run', () => {
     ]);
     expect(await since()).toBe('2031-06-06');
 
-    // A bag on order means more is coming: the spell ends.
+    // A bag on order isn't in hand yet: the spell goes on (already sent, so nothing new).
     await api.post('/beans', { name: 'On the way', status: 'ordered', bag_g: 340 });
     await run('2031-06-07T07:41Z');
     expect(await bodies()).toEqual([]);
-    expect(await since()).toBeNull();
+    expect(await since()).toBe('2031-06-06');
 
-    // The spell isn't in backups.
-    await env.DB.prepare('INSERT INTO settings (key, value) VALUES (?, ?)')
-      .bind(LOW_SINCE_KEY, '2031-06-07')
-      .run();
+    // The spell (still running) isn't in backups.
     const exp = await api.get<{ tables: { settings: { key: string }[] } }>('/export');
     expect(exp.data.tables.settings.map((s) => s.key)).not.toContain(LOW_SINCE_KEY);
 
@@ -383,6 +380,46 @@ describe('the notification run', () => {
       .run();
     await run('2031-06-08T07:41Z');
     expect(await bodies()).toEqual([]);
+
+    await env.DB.batch([
+      env.DB.prepare('DELETE FROM brews'),
+      env.DB.prepare('DELETE FROM beans'),
+      env.DB.prepare('DELETE FROM settings WHERE key = ?').bind(LOW_SINCE_KEY),
+    ]);
+  });
+
+  it('sends “Beans running low” at any hour after 8, even with a bag on order', async () => {
+    await clearDevices();
+    await env.DB.batch([
+      env.DB.prepare('DELETE FROM brews'),
+      env.DB.prepare('DELETE FROM beans'),
+      env.DB.prepare('DELETE FROM settings WHERE key = ?').bind(LOW_SINCE_KEY),
+    ]);
+    const api = await session();
+    const old = (
+      await api.post<Bean>('/beans', { name: 'Old bag', status: 'finished', bag_g: 560 })
+    ).data;
+    for (let d = 1; d <= 28; d++)
+      await api.post('/brews', {
+        bean_id: old.id,
+        dose_g: 20,
+        brewed_at: new Date(Date.UTC(2031, 6, 9 - d, 7)).toISOString(),
+      });
+    await api.post('/beans', { name: 'Open bag', status: 'drinking', bag_g: 150 });
+    await api.post('/beans', { name: 'On the way', status: 'ordered', bag_g: 340 });
+    const svc = pushService();
+    const run = (iso: string) =>
+      runNotifications(env.DB, { now: new Date(iso), fetcher: svc.fetcher });
+    const utc = await device('UTC');
+    // 7:41 local: low, but too early to send.
+    await run('2031-07-09T07:41Z');
+    expect(svc.got).toHaveLength(0);
+    // That device goes; another turns notifications on at 22:00 and the 22:41 run sends it.
+    await env.DB.prepare('DELETE FROM selfhost_push_devices WHERE id = ?').bind(utc.d.id).run();
+    const late = await device('UTC');
+    await run('2031-07-09T22:41Z');
+    expect(svc.got.map((r) => r.url)).toEqual([late.d.endpoint]);
+    expect(await decrypt(late.b, svc.got[0]!.body)).toMatchObject({ title: 'Beans running low' });
 
     await env.DB.batch([
       env.DB.prepare('DELETE FROM brews'),

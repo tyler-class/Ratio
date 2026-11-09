@@ -97,7 +97,7 @@ export function BeanSheet({ m, s, beanId }: { m: Model; s: Settings; beanId: str
             label="Would you buy it again?"
             value={b.buy_again}
             allowClear
-            options={BUY_AGAIN.map((o) => [o.key, o.label] as const)}
+            options={BUY_AGAIN.map((o) => [o.key, o.label, o.tone] as const)}
             onChange={(buy_again) => actions.beans.update(b.id, { buy_again })}
           />
         </Field>

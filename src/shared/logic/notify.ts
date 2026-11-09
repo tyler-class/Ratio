@@ -32,12 +32,11 @@ export interface Notice {
 }
 
 /**
- * Beans are low when the runway is under LOW_DAYS days and nothing is on order (a bag on the
- * way means you've already ordered more). No recent brews means no runway, so not low.
+ * Beans are low when the runway is under LOW_DAYS days. The runway counts only bags in hand, so
+ * a bag on order doesn't count until it arrives. No recent brews means no runway, so not low.
  */
-export function beansLow(m: Pick<Model, 'runway' | 'beans'>): boolean {
-  if (m.runway == null || m.runway >= LOW_DAYS) return false;
-  return !m.beans.some((b) => b.status === 'ordered');
+export function beansLow(m: Pick<Model, 'runway'>): boolean {
+  return m.runway != null && m.runway < LOW_DAYS;
 }
 
 /**

@@ -112,11 +112,11 @@ describe('beans running low', () => {
     expect(withStock(100, [bean({ id: 'x', status: 'finished', bag_g: 200 })]).runway).toBe(5);
   });
 
-  it('isn’t low with a bag on order, or with no recent brews', () => {
+  it('is still low with a bag on order (not in hand yet), but not with no recent brews', () => {
     expect(beansLow(withStock(100))).toBe(true);
-    expect(beansLow(withStock(100, [bean({ id: 'o', status: 'ordered', bag_g: 340 })]))).toBe(
-      false,
-    );
+    const ordered = withStock(100, [bean({ id: 'o', status: 'ordered', bag_g: 340 })]);
+    expect(ordered.runway).toBe(5);
+    expect(beansLow(ordered)).toBe(true);
     const idle = buildModel(state([bean({ bag_g: 50 })], []), NOW);
     expect(idle.runway).toBeNull();
     expect(beansLow(idle)).toBe(false);

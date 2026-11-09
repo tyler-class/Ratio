@@ -1,5 +1,6 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { fmtN } from '@shared/logic/units';
+import type { Tone } from '@shared/lookups';
 import { Icon, type IconName } from './Icon';
 
 export function cx(...c: (string | false | null | undefined)[]) {
@@ -521,7 +522,8 @@ export function InfoTip({ label, children }: { label: string; children: ReactNod
 }
 
 type SlideToggleProps<T extends string> = {
-  options: readonly (readonly [T, ReactNode])[];
+  /** [value, label], or [value, label, tone]: a chosen option with a tone is tinted by it. */
+  options: readonly (readonly [T, ReactNode] | readonly [T, ReactNode, Tone | undefined])[];
   label: string;
   className?: string;
 } & (
@@ -533,12 +535,14 @@ type SlideToggleProps<T extends string> = {
 /**
  * A few options as one sliding toggle: the thumb slides to the chosen one. Options share the
  * width equally; one whose label needs more room grows to fit it, and when they can't all fit
- * the toggle scrolls sideways. The thumb is measured from the chosen option.
+ * the toggle scrolls sideways. The thumb is measured from the chosen option. An option with a
+ * tone (good, warn, bad, blue) tints the thumb and its label when chosen; others use the accent.
  */
 export function SlideToggle<T extends string>(props: SlideToggleProps<T>) {
   const { options, label, className } = props;
   const index = options.findIndex(([v]) => v === props.value);
   const n = options.length;
+  const tone = index >= 0 ? options[index]![2] : undefined;
   const track = useRef<HTMLDivElement>(null);
   const [thumb, setThumb] = useState<{ left: number; width: number } | null>(null);
   useLayoutEffect(() => {
@@ -581,7 +585,7 @@ export function SlideToggle<T extends string>(props: SlideToggleProps<T>) {
       {thumb && (
         <span
           aria-hidden="true"
-          className="slide-thumb"
+          className={cx('slide-thumb', tone && 't-' + tone)}
           style={{ width: thumb.width, transform: `translateX(${thumb.left}px)` }}
         />
       )}
@@ -590,6 +594,7 @@ export function SlideToggle<T extends string>(props: SlideToggleProps<T>) {
           key={v}
           type="button"
           role="tab"
+          className={i === index && tone ? 't-' + tone : undefined}
           aria-selected={i === index}
           onClick={() => pick(v)}
         >
