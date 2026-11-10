@@ -1957,7 +1957,7 @@ textarea.in {
 }
 
 /* ---------- Insights polish ----------
-   Style only, scoped to the Insights board (.pn-wrap) so Home and sheets are untouched.
+   Style only, scoped to the Insights board (.pn-wrap), except the tiles, which Home shares.
    Tiles: label above the number. Bars: pastel fill with an outline; this week (still in
    progress) dashed. Ranked rows: a slim share track along the bottom. Panels are targeted
    by data-panel. Every colour mixes this file's theme tokens, so dark mode follows. */
@@ -1991,20 +1991,20 @@ textarea.in {
   opacity: 0.8;
 }
 
-/* ---- KPI tiles: label on top, big serif number, quiet sub-line ---- */
-.pn-wrap .stats {
+/* ---- KPI tiles (Home and Insights): label on top, big serif number, quiet sub-line ---- */
+.stats {
   gap: 10px;
 }
-.pn-wrap .stat {
+.stats .stat {
   display: flex;
   flex-direction: column;
   gap: 2px;
   background: var(--surface);
-  border: 1px solid var(--i-track);
+  border: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
   border-radius: 14px;
   padding: 12px 14px 13px;
 }
-.pn-wrap .stat .l {
+.stats .stat .l {
   order: -1;
   margin: 0 0 4px;
   font-size: 12.5px;
@@ -2013,12 +2013,12 @@ textarea.in {
   text-transform: none;
   color: var(--ink2);
 }
-.pn-wrap .stat .v {
+.stats .stat .v {
   font-size: 30px;
   letter-spacing: -0.02em;
   line-height: 1.05;
 }
-.pn-wrap .stat .d {
+.stats .stat .d {
   margin-top: 3px;
   font-size: 12px;
   color: var(--ink2);
