@@ -1,6 +1,6 @@
 # Ratio
 
-A calm coffee brewing log you host yourself. Track the bags you buy, log every brew in a few taps, rate it, and let the patterns tell you what to grind, pour and buy next.
+Most coffee apps help you log a brew. Ratio is about making the next one better. It's a brewing log you host yourself, for people who weigh their beans, change the grind on purpose, and want to know why Tuesday's cup was great and Wednesday's wasn't. Logging takes a few taps because it starts from your last recipe. The payoff is the patterns: which grind settings rate best for this bag, which origins and processes you actually like, and what to order next. No subscription and no ads, and your data sits in your own database.
 
 [![Deploy to Cloudflare](docs/deploy-to-cloudflare.svg)](https://deploy.workers.cloudflare.com/?url=https://github.com/tyler-class/ratio)
 
