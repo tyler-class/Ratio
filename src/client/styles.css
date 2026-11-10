@@ -418,8 +418,10 @@ h3,
     font-weight: 600;
     text-decoration: none;
   }
-  .side nav a:hover {
-    background: color-mix(in srgb, var(--line) 60%, transparent);
+  @media (hover: hover) and (pointer: fine) {
+    .side nav a:hover {
+      background: color-mix(in srgb, var(--line) 60%, transparent);
+    }
   }
   /* The current page: a solid pill, so it stands out from the sidebar in light and dark. */
   .side nav a[aria-current='page'] {
@@ -440,8 +442,10 @@ h3,
     font-size: 14px;
     text-align: left;
   }
-  .side-about:hover {
-    background: color-mix(in srgb, var(--line) 60%, transparent);
+  @media (hover: hover) and (pointer: fine) {
+    .side-about:hover {
+      background: color-mix(in srgb, var(--line) 60%, transparent);
+    }
   }
   .about-m {
     display: none;
@@ -851,9 +855,11 @@ textarea.in {
     transform 0.12s,
     border-color 0.15s;
 }
-.bean:hover {
-  transform: translateY(-2px);
-  border-color: var(--accent);
+@media (hover: hover) and (pointer: fine) {
+  .bean:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent);
+  }
 }
 .hd {
   display: flex;
@@ -1470,9 +1476,13 @@ textarea.in {
   flex: 1;
   text-underline-offset: 4px;
 }
-.link-row:hover span,
 .link-row:focus-visible span {
   text-decoration: underline;
+}
+@media (hover: hover) and (pointer: fine) {
+  .link-row:hover span {
+    text-decoration: underline;
+  }
 }
 .link-row svg:last-child {
   color: var(--ink2);
@@ -1537,10 +1547,12 @@ textarea.in {
 .pn-grip:active {
   cursor: grabbing;
 }
-.pn-tool:hover,
-.pn-grip:hover {
-  background: var(--surface2);
-  opacity: 1;
+@media (hover: hover) and (pointer: fine) {
+  .pn-tool:hover,
+  .pn-grip:hover {
+    background: var(--surface2);
+    opacity: 1;
+  }
 }
 .pn-tools {
   display: flex;
@@ -1620,8 +1632,10 @@ textarea.in {
   font-size: 15px;
   cursor: pointer;
 }
-.try-list button:hover {
-  color: var(--accent);
+@media (hover: hover) and (pointer: fine) {
+  .try-list button:hover {
+    color: var(--accent);
+  }
 }
 
 /* On/off switch. */
@@ -1681,9 +1695,13 @@ textarea.in {
   color: var(--ink2);
   cursor: pointer;
 }
-.infotip > button.on,
-.infotip > button:hover {
+.infotip > button.on {
   color: var(--accent);
+}
+@media (hover: hover) and (pointer: fine) {
+  .infotip > button:hover {
+    color: var(--accent);
+  }
 }
 .infotip-pop {
   position: absolute;
@@ -1987,9 +2005,11 @@ textarea.in {
 .pn-wrap .pn-tool {
   opacity: 0.45;
 }
-.pn-wrap .pn:hover .pn-grip,
-.pn-wrap .pn:hover .pn-tool {
-  opacity: 0.8;
+@media (hover: hover) and (pointer: fine) {
+  .pn-wrap .pn:hover .pn-grip,
+  .pn-wrap .pn:hover .pn-tool {
+    opacity: 0.8;
+  }
 }
 
 /* ---- KPI tiles (Home and Insights): label on top, big serif number, quiet sub-line ---- */
@@ -2157,8 +2177,10 @@ textarea.in {
   border-radius: 10px;
   transition: background 0.12s;
 }
-.pn-wrap .rk:hover {
-  background: var(--i-soft);
+@media (hover: hover) and (pointer: fine) {
+  .pn-wrap .rk:hover {
+    background: var(--i-soft);
+  }
 }
 .pn-wrap .rk-top {
   margin-bottom: 0;
@@ -2183,8 +2205,10 @@ textarea.in {
 .pn-wrap .rk .bar > i {
   opacity: 0.8;
 }
-.pn-wrap .rk:hover .bar > i {
-  opacity: 1;
+@media (hover: hover) and (pointer: fine) {
+  .pn-wrap .rk:hover .bar > i {
+    opacity: 1;
+  }
 }
 
 /* ---- list rows (Order again, Recipe book): hairlines, hover fill ---- */
@@ -2198,8 +2222,10 @@ textarea.in {
   padding-right: 10px;
   width: calc(100% + 20px);
 }
-.pn-wrap .ri .rm:hover {
-  background: var(--i-soft);
+@media (hover: hover) and (pointer: fine) {
+  .pn-wrap .ri .rm:hover {
+    background: var(--i-soft);
+  }
 }
 .pn-wrap .rb {
   min-width: 34px;
