@@ -2,7 +2,7 @@
 
 A calm coffee brewing log you host yourself. Track the bags you buy, log every brew in a few taps, rate it, and let the patterns tell you what to grind, pour and buy next.
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/tyler-class/ratio)
+[![Deploy to Cloudflare](docs/deploy-to-cloudflare.svg)](https://deploy.workers.cloudflare.com/?url=https://github.com/tyler-class/ratio)
 
 ![Ratio on a laptop and a phone: home with stock runway, and a bag's dial-in chart and recent brews](docs/screenshots/hero.png)
 
@@ -89,7 +89,7 @@ You can also do this in the middle of the next step: Cloudflare asks you to conn
 
 ### 4. Click Deploy
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/tyler-class/ratio)
+[![Deploy to Cloudflare](docs/deploy-to-cloudflare.svg)](https://deploy.workers.cloudflare.com/?url=https://github.com/tyler-class/ratio)
 
 Sign in to Cloudflare if it asks. You land on a setup page.
 
