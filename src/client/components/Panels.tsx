@@ -266,6 +266,7 @@ function Panel({
       ref={nodeRef}
       className={cx('card pn', placeholder && 'pn-ph', overlay && 'pn-overlay')}
       data-size={size}
+      data-panel={def.id}
     >
       <header className="pn-h">
         {grip ?? (
