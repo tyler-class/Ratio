@@ -418,8 +418,10 @@ h3,
     font-weight: 600;
     text-decoration: none;
   }
-  .side nav a:hover {
-    background: color-mix(in srgb, var(--line) 60%, transparent);
+  @media (hover: hover) and (pointer: fine) {
+    .side nav a:hover {
+      background: color-mix(in srgb, var(--line) 60%, transparent);
+    }
   }
   /* The current page: a solid pill, so it stands out from the sidebar in light and dark. */
   .side nav a[aria-current='page'] {
@@ -440,8 +442,10 @@ h3,
     font-size: 14px;
     text-align: left;
   }
-  .side-about:hover {
-    background: color-mix(in srgb, var(--line) 60%, transparent);
+  @media (hover: hover) and (pointer: fine) {
+    .side-about:hover {
+      background: color-mix(in srgb, var(--line) 60%, transparent);
+    }
   }
   .about-m {
     display: none;
@@ -851,9 +855,11 @@ textarea.in {
     transform 0.12s,
     border-color 0.15s;
 }
-.bean:hover {
-  transform: translateY(-2px);
-  border-color: var(--accent);
+@media (hover: hover) and (pointer: fine) {
+  .bean:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent);
+  }
 }
 .hd {
   display: flex;
@@ -1470,9 +1476,13 @@ textarea.in {
   flex: 1;
   text-underline-offset: 4px;
 }
-.link-row:hover span,
 .link-row:focus-visible span {
   text-decoration: underline;
+}
+@media (hover: hover) and (pointer: fine) {
+  .link-row:hover span {
+    text-decoration: underline;
+  }
 }
 .link-row svg:last-child {
   color: var(--ink2);
@@ -1482,7 +1492,8 @@ textarea.in {
 /* ---------- arrangeable panels (Insights) ---------- */
 
 .pn-wrap {
-  container-type: inline-size;
+  /* Named: each panel is a container too, so board-width rules must say which they mean. */
+  container: pn-board / inline-size;
 }
 .pn-grid {
   display: grid;
@@ -1490,7 +1501,7 @@ textarea.in {
   grid-auto-flow: row dense;
   gap: 14px;
 }
-@container (min-width: 680px) {
+@container pn-board (min-width: 680px) {
   .pn-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -1536,10 +1547,12 @@ textarea.in {
 .pn-grip:active {
   cursor: grabbing;
 }
-.pn-tool:hover,
-.pn-grip:hover {
-  background: var(--surface2);
-  opacity: 1;
+@media (hover: hover) and (pointer: fine) {
+  .pn-tool:hover,
+  .pn-grip:hover {
+    background: var(--surface2);
+    opacity: 1;
+  }
 }
 .pn-tools {
   display: flex;
@@ -1549,7 +1562,7 @@ textarea.in {
 .pn-size {
   display: none;
 }
-@container (min-width: 680px) {
+@container pn-board (min-width: 680px) {
   .pn-size {
     display: inline-flex;
   }
@@ -1619,8 +1632,10 @@ textarea.in {
   font-size: 15px;
   cursor: pointer;
 }
-.try-list button:hover {
-  color: var(--accent);
+@media (hover: hover) and (pointer: fine) {
+  .try-list button:hover {
+    color: var(--accent);
+  }
 }
 
 /* On/off switch. */
@@ -1680,9 +1695,13 @@ textarea.in {
   color: var(--ink2);
   cursor: pointer;
 }
-.infotip > button.on,
-.infotip > button:hover {
+.infotip > button.on {
   color: var(--accent);
+}
+@media (hover: hover) and (pointer: fine) {
+  .infotip > button:hover {
+    color: var(--accent);
+  }
 }
 .infotip-pop {
   position: absolute;
@@ -1954,4 +1973,274 @@ textarea.in {
   .pn .stats {
     grid-template-columns: repeat(6, minmax(0, 1fr));
   }
+}
+
+/* ---------- Insights polish ----------
+   Style only, scoped to the Insights board (.pn-wrap), except the tiles, which Home shares.
+   Tiles: label above the number. Bars: pastel fill with an outline; this week (still in
+   progress) dashed. Ranked rows: a slim share track along the bottom. Panels are targeted
+   by data-panel. Every colour mixes this file's theme tokens, so dark mode follows. */
+.pn-wrap {
+  --i-soft: color-mix(in srgb, var(--surface2) 55%, var(--surface));
+  --i-track: color-mix(in srgb, var(--line) 70%, transparent);
+}
+
+/* ---- panel shell: quieter header, a little more air ---- */
+.pn-wrap .card.pn {
+  border-radius: 18px;
+  padding: 18px 20px 20px;
+  box-shadow:
+    0 1px 2px rgba(60, 32, 12, 0.04),
+    0 1px 1px rgba(60, 32, 12, 0.02);
+}
+.pn-wrap .pn-t h3 {
+  font-size: 17px;
+  letter-spacing: -0.01em;
+}
+.pn-wrap .pn-t .sub {
+  font-size: 12.5px;
+  color: var(--ink2);
+}
+.pn-wrap .pn-grip,
+.pn-wrap .pn-tool {
+  opacity: 0.45;
+}
+@media (hover: hover) and (pointer: fine) {
+  .pn-wrap .pn:hover .pn-grip,
+  .pn-wrap .pn:hover .pn-tool {
+    opacity: 0.8;
+  }
+}
+
+/* ---- KPI tiles (Home and Insights): label on top, big serif number, quiet sub-line ---- */
+.stats {
+  gap: 10px;
+}
+.stats .stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: var(--surface);
+  border: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
+  border-radius: 14px;
+  padding: 12px 14px 13px;
+}
+.stats .stat .l {
+  order: -1;
+  margin: 0 0 4px;
+  font-size: 12.5px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink2);
+}
+.stats .stat .v {
+  font-size: 30px;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+.stats .stat .d {
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--ink2);
+  opacity: 0.85;
+}
+
+/* ---- calendar heatmap: paler empty days, classed tiers of one hue ---- */
+.pn-wrap .chart .h0 {
+  fill: var(--i-soft);
+}
+.pn-wrap .chart .h1 {
+  fill: color-mix(in srgb, var(--accent) 22%, var(--surface));
+  opacity: 1;
+}
+.pn-wrap .chart .h2 {
+  fill: color-mix(in srgb, var(--accent) 45%, var(--surface));
+  opacity: 1;
+}
+.pn-wrap .chart .h3 {
+  fill: color-mix(in srgb, var(--accent) 72%, var(--surface));
+  opacity: 1;
+}
+.pn-wrap .chart .h4 {
+  fill: var(--accent);
+}
+.pn-wrap .chart rect[class^='h'] {
+  rx: 4px;
+}
+
+/* ---- axes and labels: hairline baseline, muted small text ---- */
+.pn-wrap .chart text {
+  font-size: 10.5px;
+  fill: var(--ink2);
+}
+.pn-wrap .chart .ax {
+  stroke: var(--i-track);
+}
+.pn-wrap .chart .gl {
+  stroke: var(--i-track);
+  stroke-dasharray: none;
+  opacity: 0.6;
+}
+.pn-wrap .chart .vl {
+  fill: var(--ink2);
+  font-weight: 500;
+  font-size: 10.5px;
+}
+
+/* ---- bars: pastel fill with a solid outline; the unfinished week dashed ---- */
+.pn-wrap .chart [class^='bar-'] {
+  stroke-width: 1.25px;
+  rx: 5px;
+}
+.pn-wrap .chart .bar-a,
+.pn-wrap .chart .bar-s {
+  fill: color-mix(in srgb, var(--accent) 22%, var(--surface));
+  stroke: var(--accent);
+  opacity: 1;
+}
+.pn-wrap .chart .bar-good {
+  fill: color-mix(in srgb, var(--good) 24%, var(--surface));
+  stroke: var(--good);
+}
+.pn-wrap .chart .bar-warn {
+  fill: color-mix(in srgb, var(--warn) 24%, var(--surface));
+  stroke: var(--warn);
+}
+.pn-wrap .chart .bar-bad {
+  fill: color-mix(in srgb, var(--bad) 24%, var(--surface));
+  stroke: var(--bad);
+}
+.pn-wrap .chart .bar-blue {
+  fill: color-mix(in srgb, var(--blue) 24%, var(--surface));
+  stroke: var(--blue);
+}
+/* "Brews per week": past weeks are .bar-s, this week .bar-a (unfinished): dashed. */
+.pn-wrap .chart .bar-a {
+  stroke-dasharray: 3 2.5;
+  fill: color-mix(in srgb, var(--accent) 12%, var(--surface));
+}
+/* Bars that aren't time series (rating distribution) use .bar-a too: keep them solid there. */
+.pn-wrap [data-panel='ratings'] .chart .bar-a {
+  stroke-dasharray: none;
+  fill: color-mix(in srgb, var(--accent) 22%, var(--surface));
+}
+
+/* ---- stacked months: separated segments ---- */
+.pn-wrap [data-panel='dialin'] .chart [class^='bar-'] {
+  stroke: var(--surface);
+  stroke-width: 2px;
+  rx: 4px;
+  fill-opacity: 0.9;
+}
+.pn-wrap [data-panel='dialin'] .chart .bar-good {
+  fill: var(--good);
+}
+.pn-wrap [data-panel='dialin'] .chart .bar-warn {
+  fill: var(--warn);
+}
+.pn-wrap [data-panel='dialin'] .chart .bar-bad {
+  fill: var(--bad);
+}
+.pn-wrap [data-panel='dialin'] .chart .bar-blue {
+  fill: var(--blue);
+}
+
+/* ---- scatter: ringed dots so overlaps separate ---- */
+.pn-wrap .chart circle[class^='dot-'] {
+  stroke: var(--surface);
+  stroke-width: 1.5px;
+  opacity: 0.85;
+}
+
+/* ---- legend: small rounded squares ---- */
+.pn-wrap .legend {
+  gap: 16px;
+  font-size: 12px;
+  margin-top: 10px;
+}
+.pn-wrap .legend i {
+  width: 8px;
+  height: 8px;
+  border-radius: 2.5px;
+}
+
+/* ---- ranked lists: name + value, sub-line, slim 4px share track along the bottom ---- */
+.pn-wrap .rank {
+  gap: 2px;
+}
+.pn-wrap .rk {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 10px 9px;
+  margin: 0 -10px;
+  border-radius: 10px;
+  transition: background 0.12s;
+}
+@media (hover: hover) and (pointer: fine) {
+  .pn-wrap .rk:hover {
+    background: var(--i-soft);
+  }
+}
+.pn-wrap .rk-top {
+  margin-bottom: 0;
+  font-size: 14px;
+}
+.pn-wrap .rk-l {
+  font-weight: 500;
+}
+.pn-wrap .rk-v {
+  font-size: 13px;
+}
+.pn-wrap .rk-s {
+  order: 1;
+  margin-top: 1px;
+}
+.pn-wrap .rk .bar {
+  order: 2;
+  height: 4px;
+  margin-top: 7px;
+  background: var(--i-track);
+}
+.pn-wrap .rk .bar > i {
+  opacity: 0.8;
+}
+@media (hover: hover) and (pointer: fine) {
+  .pn-wrap .rk:hover .bar > i {
+    opacity: 1;
+  }
+}
+
+/* ---- list rows (Order again, Recipe book): hairlines, hover fill ---- */
+.pn-wrap .ri {
+  border-top-color: var(--i-track);
+}
+.pn-wrap .ri .rm {
+  border-radius: 12px;
+  margin: 0 -10px;
+  padding-left: 10px;
+  padding-right: 10px;
+  width: calc(100% + 20px);
+}
+@media (hover: hover) and (pointer: fine) {
+  .pn-wrap .ri .rm:hover {
+    background: var(--i-soft);
+  }
+}
+.pn-wrap .rb {
+  min-width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  font-size: 15px;
+}
+.pn-wrap .tag {
+  font-size: 11.5px;
+  font-weight: 500;
+  padding: 2px 9px;
+}
+
+/* ---- hint / empty ---- */
+.pn-wrap .hint {
+  font-size: 12.5px;
+  color: var(--ink2);
 }
