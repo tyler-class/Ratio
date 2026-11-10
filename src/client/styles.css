@@ -1482,7 +1482,8 @@ textarea.in {
 /* ---------- arrangeable panels (Insights) ---------- */
 
 .pn-wrap {
-  container-type: inline-size;
+  /* Named: each panel is a container too, so board-width rules must say which they mean. */
+  container: pn-board / inline-size;
 }
 .pn-grid {
   display: grid;
@@ -1490,7 +1491,7 @@ textarea.in {
   grid-auto-flow: row dense;
   gap: 14px;
 }
-@container (min-width: 680px) {
+@container pn-board (min-width: 680px) {
   .pn-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -1549,7 +1550,7 @@ textarea.in {
 .pn-size {
   display: none;
 }
-@container (min-width: 680px) {
+@container pn-board (min-width: 680px) {
   .pn-size {
     display: inline-flex;
   }
