@@ -19,6 +19,10 @@ The payoff is the patterns: which grind settings rate best for this bag, which o
 - **Built for phones.** Install it to your home screen. It works like an app, and the last-loaded log stays readable offline.
 - **Yours.** It runs on your own Cloudflare account. The free plan is plenty. Your data stays in your database.
 
+**Ask your assistant, typed or out loud.** It logs a brew with the right water for your ratio, finds the grind that has worked best, suggests what to order next, and rates a brew you describe on your phone.
+
+![An AI assistant connected to Ratio: on a laptop it logs a V60 of the Kiambu AA, finds the best grind for the Guji and suggests what to order; on a phone it lists what's on the bar and rates a dictated brew](docs/screenshots/ai-chat.png)
+
 One deployment is one coffee log.
 
 ## Screenshots
