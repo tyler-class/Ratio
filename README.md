@@ -1,6 +1,6 @@
 # Ratio
 
-Most coffee apps help you log a brew. Ratio is about making the next one better. It's a brewing log you host yourself, for people who weigh their beans, change the grind on purpose, and want to know why Tuesday's cup was great and Wednesday's wasn't. Logging takes a few taps because it starts from your last recipe. The payoff is the patterns: which grind settings rate best for this bag, which origins and processes you actually like, and what to order next. No subscription and no ads, and your data sits in your own database.
+Most coffee apps help you log a brew. Ratio is about making the next one better. It's a brewing log you host yourself, for people who weigh their beans, change the grind on purpose, and want to know why Tuesday's cup was great and Wednesday's wasn't. Logging takes a few taps because it starts from your last recipe, or none at all: with the built-in MCP server you can tell your AI assistant "log a V60 of the Kenya, 8 out of 10, a bit sour" and it's done. The payoff is the patterns: which grind settings rate best for this bag, which origins and processes you actually like, and what to order next, in Insights or by just asking your assistant. No subscription and no ads, and your data sits in your own database.
 
 [![Deploy to Cloudflare](docs/deploy-to-cloudflare.svg)](https://deploy.workers.cloudflare.com/?url=https://github.com/tyler-class/ratio)
 
