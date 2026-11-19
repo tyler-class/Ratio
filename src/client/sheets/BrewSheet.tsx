@@ -20,6 +20,7 @@ import {
   Sheet,
   SlideToggle,
 } from '../components/ui';
+import { STATUS_ICON } from '../lib/statusIcons';
 import { useSheets, type LogPrefill } from './context';
 
 export interface RateValues {
@@ -170,19 +171,9 @@ export function RateSheet({ m, s, brewId }: { m: Model; s: Settings; brewId: str
               Skip
             </button>
           )}
-          {editing ? (
-            <button
-              type="button"
-              className="btn ghost"
-              onClick={() => sheets.log({ fromBrewId: editing.id })}
-            >
-              Brew again
-            </button>
-          ) : (
-            <button type="button" className="btn ghost" onClick={sheets.close}>
-              Cancel
-            </button>
-          )}
+          <button type="button" className="btn ghost" onClick={sheets.close}>
+            Cancel
+          </button>
           <button type="button" className="btn primary" disabled={busy} onClick={save}>
             {busy ? 'Saving…' : 'Save'}
           </button>
@@ -389,9 +380,19 @@ export function BrewSheet({
               Delete
             </ConfirmButton>
           )}
-          <button type="button" className="btn ghost" onClick={sheets.close}>
-            Cancel
-          </button>
+          {editing ? (
+            <button
+              type="button"
+              className="btn ghost"
+              onClick={() => sheets.log({ fromBrewId: editing.id })}
+            >
+              Brew again
+            </button>
+          ) : (
+            <button type="button" className="btn ghost" onClick={sheets.close}>
+              Cancel
+            </button>
+          )}
           <button type="button" className="btn primary" disabled={busy} onClick={save}>
             {busy ? 'Saving…' : editing ? 'Save' : 'Log brew'}
           </button>
@@ -419,10 +420,12 @@ export function BrewSheet({
           onChange={pickBean}
           placeholder="Choose a bean"
           groups={groups.map((g) => ({
-            label: `${g.st.icon} ${g.st.label}`,
+            label: g.st.label,
+            icon: STATUS_ICON[g.st.key],
             options: g.items.map((b) => ({
               value: b.id,
-              label: b.name + (b.roasterName ? ` · ${b.roasterName}` : ''),
+              label: b.name,
+              sub: b.roasterName || undefined,
             })),
           }))}
         />
