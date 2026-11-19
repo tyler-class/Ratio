@@ -120,7 +120,7 @@ export function Home() {
       <div className="sec">
         <div className="sec-h">
           <h2>
-            <Icon name="coffee" size={20} />
+            <Icon name="bean" size={20} />
             On the bar
           </h2>
           <Link className="more" to="/beans">
