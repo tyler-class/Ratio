@@ -30,7 +30,7 @@ function activeTab(path: string): string {
 export function Brand() {
   return (
     <div className="brand serif">
-      <img className="logo" src="/favicon.svg" alt="" width={36} height={36} />
+      <img className="logo" src="/pwa-192x192.png" alt="" width={36} height={36} />
       Ratio
     </div>
   );

@@ -2577,9 +2577,13 @@ textarea.in {
   font-size: 13px;
 }
 
-/* --- 1.0.4: the logo is the stoneware mug on the crema tile (public/favicon.svg). */
+/* --- The logo is the app icon itself (public/pwa-192x192.png), rounded like the favicon, so
+   its grain matches the installed icon. An SVG drawn this small renders the grain coarser. */
 img.logo {
   display: block;
   background: none;
-  border-radius: 0;
+  border-radius: 22%;
+}
+.appbar img.logo {
+  border-radius: 22%;
 }
