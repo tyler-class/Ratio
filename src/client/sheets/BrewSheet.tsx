@@ -170,9 +170,19 @@ export function RateSheet({ m, s, brewId }: { m: Model; s: Settings; brewId: str
               Skip
             </button>
           )}
-          <button type="button" className="btn ghost" onClick={sheets.close}>
-            Cancel
-          </button>
+          {editing ? (
+            <button
+              type="button"
+              className="btn ghost"
+              onClick={() => sheets.log({ fromBrewId: editing.id })}
+            >
+              Brew again
+            </button>
+          ) : (
+            <button type="button" className="btn ghost" onClick={sheets.close}>
+              Cancel
+            </button>
+          )}
           <button type="button" className="btn primary" disabled={busy} onClick={save}>
             {busy ? 'Saving…' : 'Save'}
           </button>

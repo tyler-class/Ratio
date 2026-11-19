@@ -87,6 +87,20 @@ const P = {
 
 export type IconName = keyof typeof P;
 
+/**
+ * The main sections (Home, Brews, Beans, Insights, Settings) are speckled stoneware pieces on
+ * clay blobs, like the logo's mug (public/icons/). They're drawn a little larger than line
+ * icons so they read at the same weight.
+ */
+const CERAMIC: Partial<Record<IconName, string>> = {
+  home: '/icons/home.svg',
+  book: '/icons/brews.svg',
+  bean: '/icons/beans.svg',
+  chart: '/icons/insights.svg',
+  settings: '/icons/settings.svg',
+};
+export const isCeramic = (name: IconName) => name in CERAMIC;
+
 export function Icon({
   name,
   size = 18,
@@ -98,6 +112,21 @@ export function Icon({
   className?: string;
   strokeWidth?: number;
 }) {
+  const art = CERAMIC[name];
+  if (art) {
+    const px = Math.round(size * 1.36);
+    return (
+      <img
+        src={art}
+        width={px}
+        height={px}
+        alt=""
+        aria-hidden="true"
+        draggable={false}
+        className={`ceramic flex-none ${className}`}
+      />
+    );
+  }
   return (
     <svg
       width={size}

@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Link } from 'react-router';
 import { STATUSES } from '@shared/lookups';
 import { dayKey, dayLabel, daysBetween, inDays, MO, parseDay, WD } from '@shared/logic/dates';
@@ -16,7 +15,6 @@ export function Home() {
   const data = useModel();
   const sheets = useSheets();
   const actions = useActions();
-  const [open, setOpen] = useState<string | null>(null);
   if (!data) return null;
   const { m, state } = data;
   const s = state.settings;
@@ -59,10 +57,7 @@ export function Home() {
       <div className="card hero">
         <div>
           <div className="sub">{`${WD[now.getDay()]}, ${MO[now.getMonth()]} ${now.getDate()}`}</div>
-          <h1 className="page-t">
-            <Icon name="home" size={26} />
-            {greet}
-          </h1>
+          <h1 className="page-t">{greet}</h1>
           <div className="sub" style={{ marginTop: 4 }}>
             {today.length === 0
               ? 'Nothing brewed yet today.'
@@ -211,8 +206,8 @@ export function Home() {
               <Icon name="book" size={20} />
               Recent brews
             </h2>
-            <Link className="more" to="/journal">
-              Journal
+            <Link className="more" to="/brews">
+              All brews
             </Link>
           </div>
           <div className="card flat" style={{ padding: '4px 16px' }}>
@@ -221,8 +216,6 @@ export function Home() {
                 key={b.id}
                 b={b}
                 s={s}
-                open={open === b.id}
-                onToggle={() => setOpen(open === b.id ? null : b.id)}
                 showDate={daysBetween(b.date, now) === 0 ? undefined : dayLabel(b.date, now)}
               />
             ))}

@@ -8,7 +8,7 @@ import { onPushOpen } from '../kit/push';
 
 const TABS: GlassTab[] = [
   ['/', 'Home', 'home'],
-  ['/journal', 'Journal', 'book'],
+  ['/brews', 'Brews', 'book'],
   ['/beans', 'Beans', 'bean'],
   ['/insights', 'Insights', 'chart'],
   ['/settings', 'Settings', 'settings'],

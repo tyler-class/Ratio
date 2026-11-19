@@ -2,7 +2,7 @@ import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } f
 import { fmtN } from '@shared/logic/units';
 import type { Tone } from '@shared/lookups';
 import { useFolded } from '../lib/view';
-import { Icon, type IconName } from './Icon';
+import { Icon, isCeramic, type IconName } from './Icon';
 
 export function cx(...c: (string | false | null | undefined)[]) {
   return c.filter(Boolean).join(' ');
@@ -716,9 +716,13 @@ export function Empty({
 }) {
   return (
     <div className={cx('empty', className)}>
-      <span className="empty-ic">
-        <Icon name={icon} size={22} />
-      </span>
+      {isCeramic(icon) ? (
+        <Icon name={icon} size={38} className="empty-ceramic" />
+      ) : (
+        <span className="empty-ic">
+          <Icon name={icon} size={22} />
+        </span>
+      )}
       <div className="empty-t">{title}</div>
       {children ? <div className="empty-l">{children}</div> : null}
     </div>

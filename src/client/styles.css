@@ -1051,17 +1051,6 @@ textarea.in {
   text-align: right;
   flex: none;
 }
-.rd {
-  padding: 2px 2px 16px 52px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-@media (max-width: 600px) {
-  .rd {
-    padding-left: 2px;
-  }
-}
 .callout {
   background: var(--accent-soft);
   border-radius: 12px;
@@ -2586,4 +2575,26 @@ img.logo {
 }
 .appbar img.logo {
   border-radius: 22%;
+}
+
+/* The time list scrolls; its rows keep their full height (in a height-capped column they would
+   otherwise shrink, spilling the text out of the highlight). */
+.time-list {
+  position: relative; /* so a row's offsetTop, used to scroll to the chosen time, is in the list */
+}
+.time-opt {
+  flex: none;
+  display: block;
+  width: 100%;
+  line-height: 20px;
+}
+
+/* The stoneware section icons (Icon's CERAMIC): pictures, not line art, so no colour or tint. */
+img.ceramic {
+  display: block;
+  -webkit-user-drag: none;
+  user-select: none;
+}
+.empty-ceramic {
+  margin-bottom: 6px;
 }
