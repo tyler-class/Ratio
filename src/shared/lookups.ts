@@ -46,12 +46,15 @@ export type Extraction = (typeof EXTRACTION)[number]['key'];
 export const EXTRACTION_KEYS = EXTRACTION.map((e) => e.key) as [Extraction, ...Extraction[]];
 
 export const STRENGTH = [
-  { key: 'watery', label: 'Watery' },
+  { key: 'weak', label: 'Weak' },
   { key: 'balanced', label: 'Balanced' },
-  { key: 'muddy', label: 'Muddy' },
+  { key: 'strong', label: 'Strong' },
 ] as const;
 export type Strength = (typeof STRENGTH)[number]['key'];
 export const STRENGTH_KEYS = STRENGTH.map((s) => s.key) as [Strength, ...Strength[]];
+/** "watery" and "muddy" were retired in v1.1.1 (migration 0005); old backups and clients map. */
+export const normalizeStrength = (v: unknown) =>
+  v === 'watery' ? 'weak' : v === 'muddy' ? 'strong' : v;
 
 export const BUY_AGAIN = [
   { key: 'definitely', label: 'Definitely', tone: 'good' },

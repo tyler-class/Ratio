@@ -2,6 +2,7 @@
 // it rests, and three tabs. Overview shows every detail in cards that each flip into their fields
 // to edit; Timeline lists its status changes, newest first; Dial-in has the grind-vs-rating plot,
 // stats and its brews.
+import { grindLabel, positionOf, scaleFor } from '@shared/grind';
 import { useRef, useState, type ReactNode } from 'react';
 import { BUY_AGAIN, EXTRACTION, STATUSES, type BeanStatus } from '@shared/lookups';
 import { agoLabel, dayKey, dayLabel, daysBetween, parseDay } from '@shared/logic/dates';
@@ -151,7 +152,7 @@ export function BeanSheet({ m, s, beanId }: { m: Model; s: Settings; beanId: str
       </div>
       {tab === 'overview' && <Overview b={b} m={m} s={s} />}
       {tab === 'timeline' && <Timeline b={b} />}
-      {tab === 'dialin' && <DialIn b={b} />}
+      {tab === 'dialin' && <DialIn b={b} s={s} />}
     </Sheet>
   );
 }
@@ -857,7 +858,7 @@ function Timeline({ b }: { b: BeanView }) {
   );
 }
 
-function DialIn({ b }: { b: BeanView }) {
+function DialIn({ b, s }: { b: BeanView; s: Settings }) {
   const sheets = useSheets();
   const now = new Date();
   const pts = b.brews
@@ -865,14 +866,15 @@ function DialIn({ b }: { b: BeanView }) {
     .map((x) => {
       const ex = EXTRACTION.find((e) => e.key === x.extraction);
       return {
-        x: x.grind!,
+        // Evenly spaced along the dial (Ode 4.2 sits two thirds of the way to 5).
+        x: positionOf(x.grind!, scaleFor(x.grinder, s.grind_scales)),
         y: x.rating!,
         tone: ex?.tone ?? 'a',
-        title: `Grind ${fmtN(x.grind)} · rated ${fmtN(x.rating)}${ex ? ' · ' + ex.label : ''}`,
+        title: `Grind ${grindLabel(x, s.grind_scales)} · rated ${fmtN(x.rating)}${ex ? ' · ' + ex.label : ''}`,
       };
     });
   const gx = pts.map((p) => p.x);
-  const gRows = grindTable(b);
+  const gRows = grindTable(b, s.grind_scales);
   return (
     <>
       <section className="form-sec bv-card">
@@ -922,7 +924,7 @@ function DialIn({ b }: { b: BeanView }) {
                   </div>
                   <div className="t2">
                     {fmtN(x.dose_g)} g → {x.water_ml != null ? Math.round(x.water_ml) : '–'} mL ·
-                    grind {fmtN(x.grind)}
+                    grind {grindLabel(x, s.grind_scales) ?? '–'}
                     {x.extraction
                       ? ' · ' + EXTRACTION.find((e) => e.key === x.extraction)?.label
                       : ''}

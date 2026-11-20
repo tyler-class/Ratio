@@ -8,8 +8,8 @@ import { onPushOpen } from '../kit/push';
 
 const TABS: GlassTab[] = [
   ['/', 'Home', 'home'],
-  ['/brews', 'Brews', 'book'],
   ['/beans', 'Beans', 'bean'],
+  ['/brews', 'Brews', 'book'],
   ['/insights', 'Insights', 'chart'],
   ['/settings', 'Settings', 'settings'],
 ];
@@ -37,8 +37,7 @@ export function Brand() {
 }
 
 /**
- * Phones (and the installed app): tabs in a floating glass capsule along the bottom, a floating
- * Log button, and a solid band under the status bar. 768px and up: a sidebar with the same tabs.
+ * Phones (and the installed app): tabs in a floating glass capsule along the bottom, and a solid band under the status bar. 768px and up: a sidebar with the same tabs.
  */
 export function Layout() {
   const { pathname } = useLocation();
@@ -95,9 +94,6 @@ export function Layout() {
       <main className="main">
         <Outlet />
       </main>
-      <button type="button" className="fab" aria-label="Log a brew" onClick={() => sheets.log()}>
-        <Icon name="plus" size={28} strokeWidth={2} />
-      </button>
       <GlassTabBar tabs={TABS} active={active} />
     </div>
   );
