@@ -4,7 +4,7 @@ import { GlassTabBar, type GlassTab } from '../components/GlassTabBar';
 import { Icon } from '../components/Icon';
 import { useSheets } from '../sheets/context';
 import { useTabSwipe } from '../lib/tabSwipe';
-import { onPushOpen } from '../kit/push';
+import { onPushOpen, syncBadge } from '../kit/push';
 
 const TABS: GlassTab[] = [
   ['/', 'Home', 'home'],
@@ -52,6 +52,9 @@ export function Layout() {
   const nav = useNavigate();
   // A tapped notification while Ratio is open: go to its screen in-app. (No app-icon badge.)
   useEffect(() => onPushOpen((url) => nav(url)), [nav]);
+  // On open: a notification subscription the push service stopped accepting is replaced
+  // quietly (Ratio has no app-icon count; this only does the repair).
+  useEffect(() => void syncBadge(), []);
   // ?bean=<id> (a notification about a bag): open its sheet, then drop it from the address.
   const [params, setParams] = useSearchParams();
   const beanParam = params.get('bean');

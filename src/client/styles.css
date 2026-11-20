@@ -24,6 +24,12 @@
   --warn-ink: #82540c;
   --bad-ink: #9e3a30;
   --blue-ink: #405f75;
+  --gray: #8b8178;
+  --gray-soft: #dcd5cc;
+  --gray-ink: #615850;
+  --orange: #d0702a;
+  --orange-soft: #f9dcc4;
+  --orange-ink: #9c4a12;
   --scrim: rgb(20 10 4 / 0.5);
   --sh: 0 1px 2px rgba(60, 32, 12, 0.05), 0 10px 28px rgba(60, 32, 12, 0.07);
   --serif: 'IBM Plex Serif', 'Iowan Old Style', Georgia, serif;
@@ -77,6 +83,12 @@
     --warn-ink: var(--warn);
     --bad-ink: var(--bad);
     --blue-ink: var(--blue);
+    --gray: #a79d93;
+    --gray-soft: #34302c;
+    --gray-ink: var(--gray);
+    --orange: #e79a5c;
+    --orange-soft: #42291a;
+    --orange-ink: var(--orange);
     --scrim: rgb(0 0 0 / 0.6);
     --sh: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 28px rgba(0, 0, 0, 0.35);
     --glass-fill: rgb(36 26 19 / 0.64);
@@ -113,6 +125,12 @@
   --warn-ink: var(--warn);
   --bad-ink: var(--bad);
   --blue-ink: var(--blue);
+  --gray: #a79d93;
+  --gray-soft: #34302c;
+  --gray-ink: var(--gray);
+  --orange: #e79a5c;
+  --orange-soft: #42291a;
+  --orange-ink: var(--orange);
   --scrim: rgb(0 0 0 / 0.6);
   --sh: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 28px rgba(0, 0, 0, 0.35);
   --glass-fill: rgb(36 26 19 / 0.64);
@@ -1215,6 +1233,9 @@ textarea.in {
 .bar-blue {
   fill: var(--blue);
 }
+.bar-gray {
+  fill: var(--gray);
+}
 .dot-a {
   fill: var(--accent);
   opacity: 0.7;
@@ -1233,6 +1254,14 @@ textarea.in {
 }
 .dot-blue {
   fill: var(--blue);
+  opacity: 0.8;
+}
+.dot-gray {
+  fill: var(--gray);
+  opacity: 0.8;
+}
+.dot-orange {
+  fill: var(--orange);
   opacity: 0.8;
 }
 .h0 {
@@ -1280,6 +1309,9 @@ textarea.in {
 }
 .lg-blue {
   background: var(--blue);
+}
+.lg-gray {
+  background: var(--gray);
 }
 .lg-a {
   background: var(--accent);
@@ -1939,6 +1971,12 @@ textarea.in {
 .slide button.t-blue[aria-selected='true'] {
   color: var(--blue-ink);
 }
+.slide button.t-gray[aria-selected='true'] {
+  color: var(--gray-ink);
+}
+.slide button.t-orange[aria-selected='true'] {
+  color: var(--orange-ink);
+}
 .slide .n {
   font-weight: 500;
   opacity: 0.75;
@@ -2032,6 +2070,12 @@ textarea.in {
 }
 .slide > .slide-thumb.t-blue {
   background: var(--blue-soft);
+}
+.slide > .slide-thumb.t-gray {
+  background: var(--gray-soft);
+}
+.slide > .slide-thumb.t-orange {
+  background: var(--orange-soft);
 }
 /* A chart drawn at its real width (charts.tsx measures it). */
 .chart-box {
@@ -2200,6 +2244,10 @@ textarea.in {
   fill: color-mix(in srgb, var(--blue) 24%, var(--surface));
   stroke: var(--blue);
 }
+.pn-wrap .chart .bar-gray {
+  fill: color-mix(in srgb, var(--gray) 24%, var(--surface));
+  stroke: var(--gray);
+}
 /* "Brews per week": past weeks are .bar-s, this week .bar-a (unfinished): dashed. */
 .pn-wrap .chart .bar-a {
   stroke-dasharray: 3 2.5;
@@ -2229,6 +2277,9 @@ textarea.in {
 }
 .pn-wrap [data-panel='dialin'] .chart .bar-blue {
   fill: var(--blue);
+}
+.pn-wrap [data-panel='dialin'] .chart .bar-gray {
+  fill: var(--gray);
 }
 
 /* ---- scatter: ringed dots so overlaps separate ---- */
@@ -3969,4 +4020,25 @@ button.bv-v.unset {
   .sel-list {
     scroll-margin-bottom: 16px;
   }
+}
+
+/* A bag's detail with a second fact: the value, and a quieter line under it. */
+.bv-v:has(.bv-sub) {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+}
+.bv-sub {
+  font-size: 12.5px;
+  font-weight: 400;
+  color: var(--ink2);
+}
+.bv-vw:has(.bv-sub) {
+  align-items: center;
+}
+/* Nothing set: a faint em dash. */
+.bv-v.unset,
+button.bv-v.unset {
+  opacity: 0.45;
 }

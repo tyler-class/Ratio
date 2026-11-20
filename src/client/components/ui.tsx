@@ -784,7 +784,7 @@ type SlideToggleProps<T extends string> = {
  * A few options as one sliding toggle: the thumb slides to the chosen one. Options share the
  * width equally; one whose label needs more room grows to fit it, and when they can't all fit
  * the toggle scrolls sideways. The thumb is measured from the chosen option. An option with a
- * tone (good, warn, bad, blue) tints the thumb and its label when chosen; others use the accent.
+ * tone (good, warn, bad, blue, gray, orange) tints the thumb and its label when chosen; others use the accent.
  */
 /** A titled group of fields in a form, on its own card. */
 export function FormSection({

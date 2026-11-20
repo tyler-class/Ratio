@@ -5,7 +5,7 @@
 import { grindLabel, positionOf, scaleFor } from '@shared/grind';
 import { useRef, useState, type ReactNode } from 'react';
 import { BUY_AGAIN, EXTRACTION, STATUSES, type BeanStatus } from '@shared/lookups';
-import { agoLabel, dayKey, dayLabel, daysBetween, parseDay } from '@shared/logic/dates';
+import { dayKey, dayLabel, daysBetween, parseDay } from '@shared/logic/dates';
 import { grindTable, type BeanView, type Model } from '@shared/logic/model';
 import { restInfo, stretches, type BeanEvent } from '@shared/logic/timeline';
 import { fmtN, r1 } from '@shared/logic/units';
@@ -306,23 +306,37 @@ function restBasis(r: { from: 'roast' | 'timeline'; frozen: number }): string {
 function Field1({
   label,
   value,
+  sub,
   unset,
   editor,
   long,
 }: {
   label: string;
   value: ReactNode;
+  /** A second, quieter fact under the value ("23 days ago" under the roast date). */
+  sub?: ReactNode;
   /** A long text (a description): left-aligned, filling the space after the label. */
   long?: boolean;
-  /** No value yet: shown as a quiet "Add". */
+  /** No value yet: a faint em dash beside the pencil. */
   unset?: boolean;
   /** The editor, given a way to close itself; none for a read-only line. */
   editor?: (done: () => void) => ReactNode;
 }) {
   const [editing, setEditing] = useState(false);
   const done = () => setEditing(false);
+  const shown = sub ? (
+    <>
+      {value}
+      <span className="bv-sub">{sub}</span>
+    </>
+  ) : (
+    value
+  );
   return (
-    <div className={`bv-row${editing ? ' editing' : ''}${long ? ' long' : ''}`}>
+    // An empty long field sits by its pencil like any other until it's being written in.
+    <div
+      className={`bv-row${editing ? ' editing' : ''}${long && (!unset || editing) ? ' long' : ''}`}
+    >
       <span className="bv-l">{label}</span>
       {editing && editor ? (
         <span className="bv-ed">{editor(done)}</span>
@@ -334,10 +348,10 @@ function Field1({
               className={`bv-v${unset ? ' unset' : ''}`}
               onClick={() => setEditing(true)}
             >
-              {value}
+              {shown}
             </button>
           ) : (
-            <span className={`bv-v${unset ? ' unset' : ''}`}>{value}</span>
+            <span className={`bv-v${unset ? ' unset' : ''}`}>{shown}</span>
           )}
           {editor && (
             <button
@@ -424,6 +438,9 @@ function InlineText({
   );
 }
 
+/** "Today", "Yesterday", "23 days ago": spelled out, under a date. */
+const daysAgo = (n: number) => (n <= 0 ? 'Today' : n === 1 ? 'Yesterday' : `${n} days ago`);
+
 function Overview({ b, m, s }: { b: BeanView; m: Model; s: Settings }) {
   const actions = useActions();
   const o = useBeanOptions(m);
@@ -445,7 +462,7 @@ function Overview({ b, m, s }: { b: BeanView; m: Model; s: Settings }) {
       />
     );
   };
-  const show = (v: string | null | undefined, empty = 'Add') =>
+  const show = (v: string | null | undefined, empty = '—') =>
     v && v.trim() ? { value: v } : { value: empty, unset: true };
   const altitude = b.altitude?.replace(/\s*m\.?\s*a\.?\s*s\.?\s*l\.?\s*$/i, '');
   return (
@@ -462,7 +479,7 @@ function Overview({ b, m, s }: { b: BeanView; m: Model; s: Settings }) {
           editor={(close) => <RoasterPick b={b} m={m} done={close} />}
         />
         <Field1
-          label="Roaster’s tasting notes"
+          label="Tasting notes"
           long
           {...show(b.tasting_notes)}
           editor={text('tasting_notes', {
@@ -471,7 +488,7 @@ function Overview({ b, m, s }: { b: BeanView; m: Model; s: Settings }) {
           })}
         />
         <Field1
-          label="Roaster’s description"
+          label="Description"
           long
           {...show(b.roaster_notes)}
           editor={text('roaster_notes', { multiline: true })}
@@ -487,13 +504,18 @@ function Overview({ b, m, s }: { b: BeanView; m: Model; s: Settings }) {
           label="Remaining"
           value={
             b.remaining != null
-              ? `${Math.round(b.remaining)} g of ${b.bag_g} g${brewsLeft != null ? ` · ~${plural(brewsLeft, 'brew')}` : ''}`
+              ? `${Math.round(b.remaining)} g of ${b.bag_g} g`
               : `${Math.round(b.used)} g used`
+          }
+          sub={
+            b.remaining != null && brewsLeft != null
+              ? `About ${plural(brewsLeft, 'brew')} left`
+              : undefined
           }
         />
         <Field1
           label="Bag size (grams)"
-          {...(b.bag_g != null ? { value: `${fmtN(b.bag_g)} g` } : { value: 'Add', unset: true })}
+          {...(b.bag_g != null ? { value: `${fmtN(b.bag_g)} g` } : { value: '—', unset: true })}
           editor={(close) => (
             <InlineText
               numeric
@@ -509,9 +531,10 @@ function Overview({ b, m, s }: { b: BeanView; m: Model; s: Settings }) {
           label={`Cost (${currencySymbol(s.currency)})`}
           {...(b.cost != null
             ? {
-                value: `${money(b.cost, s.currency)}${b.perG ? ` · ${money(b.perG * m.avgDose, s.currency)} a cup` : ''}`,
+                value: money(b.cost, s.currency),
+                sub: b.perG ? `${money(b.perG * m.avgDose, s.currency)} a cup` : undefined,
               }
-            : { value: 'Add', unset: true })}
+            : { value: '—', unset: true })}
           editor={(close) => (
             <InlineText
               numeric
@@ -531,9 +554,10 @@ function Overview({ b, m, s }: { b: BeanView; m: Model; s: Settings }) {
           label="Roast date"
           {...(b.roasted_on
             ? {
-                value: `${shortDay(b.roasted_on)} · ${agoLabel(daysBetween(parseDay(b.roasted_on), now))}`,
+                value: shortDay(b.roasted_on),
+                sub: daysAgo(daysBetween(parseDay(b.roasted_on), now)),
               }
-            : { value: 'Add', unset: true })}
+            : { value: '—', unset: true })}
           editor={(close) => (
             <DatePicker
               allowNone
@@ -549,7 +573,7 @@ function Overview({ b, m, s }: { b: BeanView; m: Model; s: Settings }) {
           label="Recommended rest"
           {...(b.rest_days != null
             ? { value: plural(b.rest_days, 'day') }
-            : { value: 'None', unset: true })}
+            : { value: '—', unset: true })}
           editor={(close) => (
             <InlineText
               numeric

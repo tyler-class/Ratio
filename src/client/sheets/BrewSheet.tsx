@@ -56,7 +56,6 @@ export const rateFrom = (b?: BrewView | null): RateValues => ({
 export function RateFields({ v, set }: { v: RateValues; set: (p: Partial<RateValues>) => void }) {
   const nudge = (d: number) =>
     set({ rating: Math.max(0, Math.min(10, Math.round(((v.rating ?? 7) + d) * 2) / 2)) });
-  const tip = EXTRACTION.find((e) => e.key === v.extraction)?.tip;
   return (
     <div>
       <Field label="Rating">
@@ -99,14 +98,13 @@ export function RateFields({ v, set }: { v: RateValues; set: (p: Partial<RateVal
           label="Strength"
           value={v.strength}
           allowClear
-          options={STRENGTH.map((e) => [e.key, e.label] as const)}
+          options={STRENGTH.map((e) => [e.key, e.label, e.tone] as const)}
           onChange={(strength) => set({ strength })}
         />
       </Field>
       <Field label="Tasting notes">
         <NotesField
           value={v.tasting_notes}
-          placeholder="Round, plummy, a little sharp at the end"
           onChange={(e) => set({ tasting_notes: e.target.value })}
         />
       </Field>
@@ -114,20 +112,8 @@ export function RateFields({ v, set }: { v: RateValues; set: (p: Partial<RateVal
         <input
           className="in"
           value={v.next_time}
-          placeholder="One tick finer, slower pour"
           onChange={(e) => set({ next_time: e.target.value })}
         />
-        {tip && !v.next_time.includes(tip) && (
-          <div className="seg" style={{ marginTop: 8 }}>
-            <button
-              type="button"
-              className="chip sm"
-              onClick={() => set({ next_time: v.next_time ? `${v.next_time} ${tip}` : tip })}
-            >
-              + {tip}
-            </button>
-          </div>
-        )}
       </Field>
     </div>
   );
