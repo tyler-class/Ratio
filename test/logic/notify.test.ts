@@ -348,7 +348,7 @@ describe('bag almost empty', () => {
     expect(bagDose(m, b)).toBe(20);
     expect(brewsLeft(m, b)).toBe(2.5);
     expect(emptyDay(m, b, TZ)).toBeNull(); // 2.5 is more than about 2
-    // A bag with no brews of its own falls back to the household's usual dose.
+    // A bag with no brews of its own falls back to the usual dose across bags.
     const fresh = buildModel(state([done, bean({ id: 'n', bag_g: 30 })], daily.slice(0, 5)), NOW);
     expect(bagDose(fresh, fresh.beanMap.get('n')!)).toBe(fresh.avgDose);
   });

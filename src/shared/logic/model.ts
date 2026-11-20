@@ -1,5 +1,5 @@
 // Joins the raw rows into the view model the app renders: per-bag usage, ratings and
-// stock, plus household-wide burn rate and runway. Pure, so it's unit-tested.
+// stock, plus overall burn rate and runway. Pure, so it's unit-tested.
 import { grindLabel, type GrindScale } from '../grind';
 import { LIVE_STATUSES, flagFor } from '../lookups';
 import type { AppState, Bean, Brew, Roaster } from '../types';
