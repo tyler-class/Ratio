@@ -4263,21 +4263,29 @@ button.bv-v.unset {
   flex: none;
 }
 
-/* A new brew's Last brew panel: what that brew was, with "Use these settings" on the right. */
-.last-brew {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+/* A new brew's "Starting from" panel: what the form was filled from, the last brew's "next time"
+   note, and the other choice (best or last brew) as a link. */
+.start-from .start-next {
+  margin-top: 6px;
+  font-weight: 650;
 }
-.last-brew .btn {
-  flex: none;
+.start-from .start-next span {
+  font-weight: 500;
+  color: var(--ink2);
 }
-@media (max-width: 480px) {
-  .last-brew {
-    flex-direction: column;
-    align-items: flex-start;
-  }
+.start-from .start-switch {
+  display: block;
+  margin-top: 8px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
 }
 
 /* Add a bag / Add roaster / Log a brew: beside the toggle or search row on wider screens; on

@@ -12,6 +12,7 @@ import {
 } from '@shared/grind';
 import { brewedAt, dayLabel, sinceLabel, toLocalInput } from '@shared/logic/dates';
 import type { BrewView, Model } from '@shared/logic/model';
+import { defaultBean, startFor, type BrewStart } from '@shared/logic/brewStart';
 import { fmtInt, fmtN, r1, tempIn, tempOut } from '@shared/logic/units';
 import type { Extraction, Strength } from '@shared/lookups';
 import type { Settings } from '@shared/types';
@@ -224,6 +225,19 @@ function freshFor(from: Recipe, s: Settings): Recipe {
   };
 }
 
+/**
+ * A new brew's recipe for a bag (see startFor): copied from its best or last brew; or, for a bag
+ * never brewed, your method and grinder from last time with the ratio, dose and temperature of
+ * your best brew with that method, the grind left empty.
+ */
+function recipeForStart(st: BrewStart, lastOverall: BrewView | null, s: Settings): Recipe {
+  if (st.why !== 'fresh') return recipeFrom(st.brew, s);
+  const base = freshFor(recipeFrom(lastOverall, s), s);
+  if (!st.brew) return base;
+  const t = recipeFrom(st.brew, s);
+  return { ...base, dose: t.dose, ratio: t.ratio, temp: t.temp, water: t.water };
+}
+
 /** Log a new brew (mode log) or edit any field of an existing one (mode edit). */
 export function BrewSheet({
   m,
@@ -250,16 +264,15 @@ export function BrewSheet({
         lock: false,
       };
     }
-    let br: BrewView | null = prefill?.fromBrewId
-      ? (m.brewMap.get(prefill.fromBrewId) ?? null)
-      : null;
-    const beanId = prefill?.beanId ?? br?.bean_id ?? m.brews[0]?.bean_id ?? '';
-    if (!br && beanId) br = m.beanMap.get(beanId)?.last ?? null;
-    if (!br) br = m.brews[0] ?? null;
-    let rec = recipeFrom(br, s);
-    // Ratio, temperature and grind come from this bean's last brew; a bean never brewed starts
-    // from the defaults.
-    if (br && br.bean_id !== beanId) rec = freshFor(rec, s);
+    // Brew again (Recipe book): that recipe, as it was.
+    const again = prefill?.fromBrewId ? (m.brewMap.get(prefill.fromBrewId) ?? null) : null;
+    const beanId = prefill?.beanId ?? again?.bean_id ?? defaultBean(m)?.id ?? '';
+    const bn = beanId ? m.beanMap.get(beanId) : undefined;
+    let rec: Recipe;
+    if (again) rec = recipeFrom(again, s);
+    else if (bn) rec = recipeForStart(startFor(bn, m), m.brews[0] ?? null, s);
+    // No bag yet (you choose): your method and grinder from last time, fresh otherwise.
+    else rec = freshFor(recipeFrom(m.brews[0] ?? null, s), s);
     if (!rec.water)
       rec.water = String(r1((parseNum(rec.dose) ?? 20) * (parseNum(rec.ratio) ?? 16.67)));
     // When it was brewed: now, as the sheet opens; change it for one brewed earlier.
@@ -270,8 +283,15 @@ export function BrewSheet({
   const set = (p: Partial<typeof f>) => setF((x) => ({ ...x, ...p }));
 
   const bean = f.beanId ? (m.beanMap.get(f.beanId) ?? null) : null;
-  // Only for a new brew that wasn't copied from a chosen recipe (Recipe book's Brew again).
-  const last = !editing && !prefill?.fromBrewId && bean ? bean.last : null;
+  // What a new brew started from (not for an edit, or Brew again's chosen recipe). The other
+  // choice (best or last) is one tap away when they differ.
+  const [startOver, setStartOver] = useState<BrewStart | null>(null);
+  const start = !editing && !prefill?.fromBrewId && bean ? (startOver ?? startFor(bean, m)) : null;
+  const switchStart = (st: BrewStart) => {
+    setStartOver(st);
+    setF((x) => ({ ...x, ...recipeForStart(st, m.brews[0] ?? null, s) }));
+  };
+  const last = bean?.last ?? null;
   const best = bean?.best ?? null;
   const doseN = parseNum(f.dose);
   const waterN = parseNum(f.water);
@@ -280,9 +300,14 @@ export function BrewSheet({
 
   const pickBean = (id: string) => {
     const nb = m.beanMap.get(id);
-    if (!editing && nb?.last) setF((x) => ({ ...x, beanId: id, ...recipeFrom(nb.last, s) }));
-    else if (!editing) setF((x) => ({ ...x, beanId: id, ...freshFor(x, s) }));
-    else set({ beanId: id });
+    if (!editing && nb) {
+      setStartOver(null);
+      setF((x) => ({
+        ...x,
+        beanId: id,
+        ...recipeForStart(startFor(nb, m), m.brews[0] ?? null, s),
+      }));
+    } else set({ beanId: id });
   };
   // Dose and water: locked, one follows the other at the ratio; free, the ratio follows them.
   const onDose = (val: string) => {
@@ -440,42 +465,55 @@ export function BrewSheet({
           )}
         </Field>
 
-        {last && (
-          <div className="callout" style={{ marginBottom: 18 }}>
-            {/* The last brew of this bag, and a button to put its settings back in the form. */}
-            <div className="last-brew">
-              <div>
-                <b>Last brew · {sinceLabel(last.date, now)}</b>
-                {fmtN(last.dose_g)} g → {last.water_ml != null ? fmtInt(last.water_ml) : '–'} mL ·
-                grind {grindLabel(last, s.grind_scales) ?? '–'}
-                {last.rating != null ? ` · rated ${fmtN(last.rating)}` : ''}
-                {last.extraction
-                  ? ` · ${EXTRACTION.find((e) => e.key === last.extraction)?.label}`
-                  : ''}
+        {start && (
+          // One panel saying what the form started from, the other choice a tap away, and the
+          // last brew's "next time" (dial-in advice worth seeing before brewing).
+          <div className="callout start-from" style={{ marginBottom: 18 }}>
+            <b>
+              {start.why === 'best'
+                ? `Starting from your best brew · rated ${fmtN(start.brew!.rating)} · ${sinceLabel(start.brew!.date, now)}`
+                : start.why === 'last'
+                  ? `Starting from your last brew · ${sinceLabel(start.brew!.date, now)}`
+                  : 'First brew of this bag'}
+            </b>
+            {start.why === 'fresh' ? (
+              start.brew ? (
+                <>
+                  Ratio and temperature from your best {start.brew.method ?? ''} brew. Grind is up
+                  to you.
+                </>
+              ) : (
+                <>Starting from the usual defaults. Grind is up to you.</>
+              )
+            ) : (
+              <>
+                {fmtN(start.brew!.dose_g)} g →{' '}
+                {start.brew!.water_ml != null ? fmtInt(start.brew!.water_ml) : '–'} mL · grind{' '}
+                {grindLabel(start.brew!, s.grind_scales) ?? '–'}
+              </>
+            )}
+            {last?.next_time && (
+              <div className="start-next">
+                <span>Next time:</span> {last.next_time}
               </div>
+            )}
+            {start.why === 'best' && last && last.id !== start.brew!.id && (
               <button
                 type="button"
-                className="btn sm"
-                onClick={() => setF((x) => ({ ...x, ...recipeFrom(last, s) }))}
+                className="link start-switch"
+                onClick={() => switchStart({ brew: last, why: 'last' })}
               >
-                Use these settings
+                Use last brew instead
               </button>
-            </div>
-            {last.next_time && (
-              <div style={{ marginTop: 4, fontWeight: 650 }}>{last.next_time}</div>
             )}
-            {best && best.id !== last.id && (
-              <div style={{ marginTop: 8 }}>
-                <button
-                  type="button"
-                  className="btn sm"
-                  onClick={() => setF((x) => ({ ...x, ...recipeFrom(best, s) }))}
-                >
-                  Use best recipe ({fmtN(best.rating)}): grind{' '}
-                  {grindLabel(best, s.grind_scales) ?? '–'}, 1:
-                  {best.ratio ? best.ratio.toFixed(1) : '?'}
-                </button>
-              </div>
+            {start.why === 'last' && best && best.id !== start.brew!.id && (
+              <button
+                type="button"
+                className="link start-switch"
+                onClick={() => switchStart({ brew: best, why: 'best' })}
+              >
+                Use best brew instead (rated {fmtN(best.rating)})
+              </button>
             )}
           </div>
         )}
