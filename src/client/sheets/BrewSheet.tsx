@@ -212,31 +212,21 @@ function recipeFrom(br: BrewView | null, s: Settings): Recipe {
   };
 }
 
-/** A fresh recipe for a bean with no brews yet: the method and grinder carried over. */
-function freshFor(from: Recipe, s: Settings): Recipe {
-  const dose = parseNum(from.dose) ?? 20;
-  return {
-    ...from,
-    grind: '',
-    notes: '',
-    temp: defaultTemp(s),
-    ratio: DEFAULT_RATIO,
-    water: String(r1(dose * Number(DEFAULT_RATIO))),
-  };
-}
+/** Every recipe field blank, to fill in: a bag never brewed, or no bag chosen yet. */
+const BLANK: Recipe = {
+  method: '',
+  grinder: '',
+  grind: '',
+  dose: '',
+  water: '',
+  temp: '',
+  notes: '',
+  ratio: '',
+};
 
-/**
- * A new brew's recipe for a bag (see startFor): copied from its best or last brew; or, for a bag
- * never brewed, your method and grinder from last time with the ratio, dose and temperature of
- * your best brew with that method, the grind left empty.
- */
-function recipeForStart(st: BrewStart, lastOverall: BrewView | null, s: Settings): Recipe {
-  if (st.why !== 'fresh') return recipeFrom(st.brew, s);
-  const base = freshFor(recipeFrom(lastOverall, s), s);
-  if (!st.brew) return base;
-  const t = recipeFrom(st.brew, s);
-  return { ...base, dose: t.dose, ratio: t.ratio, temp: t.temp, water: t.water };
-}
+/** A new brew's recipe for a bag (see startFor): its best or last brew, else blank. */
+const recipeForStart = (st: BrewStart, s: Settings): Recipe =>
+  st.brew ? recipeFrom(st.brew, s) : BLANK;
 
 /** Log a new brew (mode log) or edit any field of an existing one (mode edit). */
 export function BrewSheet({
@@ -270,11 +260,12 @@ export function BrewSheet({
     const bn = beanId ? m.beanMap.get(beanId) : undefined;
     let rec: Recipe;
     if (again) rec = recipeFrom(again, s);
-    else if (bn) rec = recipeForStart(startFor(bn, m), m.brews[0] ?? null, s);
-    // No bag yet (you choose): your method and grinder from last time, fresh otherwise.
-    else rec = freshFor(recipeFrom(m.brews[0] ?? null, s), s);
-    if (!rec.water)
-      rec.water = String(r1((parseNum(rec.dose) ?? 20) * (parseNum(rec.ratio) ?? 16.67)));
+    else if (bn) rec = recipeForStart(startFor(bn), s);
+    // No bag yet (you choose): blank until you pick one.
+    else rec = BLANK;
+    // Water follows from dose and ratio when both are there (a blank recipe stays blank).
+    if (!rec.water && parseNum(rec.dose) && parseNum(rec.ratio))
+      rec.water = String(r1(parseNum(rec.dose)! * parseNum(rec.ratio)!));
     // When it was brewed: now, as the sheet opens; change it for one brewed earlier.
     return { beanId, ...rec, when: toLocalInput(new Date()), lock: true };
   });
@@ -286,10 +277,10 @@ export function BrewSheet({
   // What a new brew started from (not for an edit, or Brew again's chosen recipe). The other
   // choice (best or last) is one tap away when they differ.
   const [startOver, setStartOver] = useState<BrewStart | null>(null);
-  const start = !editing && !prefill?.fromBrewId && bean ? (startOver ?? startFor(bean, m)) : null;
+  const start = !editing && !prefill?.fromBrewId && bean ? (startOver ?? startFor(bean)) : null;
   const switchStart = (st: BrewStart) => {
     setStartOver(st);
-    setF((x) => ({ ...x, ...recipeForStart(st, m.brews[0] ?? null, s) }));
+    setF((x) => ({ ...x, ...recipeForStart(st, s) }));
   };
   const last = bean?.last ?? null;
   const best = bean?.best ?? null;
@@ -305,7 +296,7 @@ export function BrewSheet({
       setF((x) => ({
         ...x,
         beanId: id,
-        ...recipeForStart(startFor(nb, m), m.brews[0] ?? null, s),
+        ...recipeForStart(startFor(nb), s),
       }));
     } else set({ beanId: id });
   };
@@ -465,33 +456,20 @@ export function BrewSheet({
           )}
         </Field>
 
-        {start && (
+        {start && start.why !== 'fresh' && (
           // One panel saying what the form started from, the other choice a tap away, and the
           // last brew's "next time" (dial-in advice worth seeing before brewing).
           <div className="callout start-from" style={{ marginBottom: 18 }}>
             <b>
               {start.why === 'best'
                 ? `Starting from your best brew · rated ${fmtN(start.brew!.rating)} · ${sinceLabel(start.brew!.date, now)}`
-                : start.why === 'last'
-                  ? `Starting from your last brew · ${sinceLabel(start.brew!.date, now)}`
-                  : 'First brew of this bag'}
+                : `Starting from your last brew · ${sinceLabel(start.brew!.date, now)}`}
             </b>
-            {start.why === 'fresh' ? (
-              start.brew ? (
-                <>
-                  Ratio and temperature from your best {start.brew.method ?? ''} brew. Grind is up
-                  to you.
-                </>
-              ) : (
-                <>Starting from the usual defaults. Grind is up to you.</>
-              )
-            ) : (
-              <>
-                {fmtN(start.brew!.dose_g)} g →{' '}
-                {start.brew!.water_ml != null ? fmtInt(start.brew!.water_ml) : '–'} mL · grind{' '}
-                {grindLabel(start.brew!, s.grind_scales) ?? '–'}
-              </>
-            )}
+            <>
+              {fmtN(start.brew!.dose_g)} g →{' '}
+              {start.brew!.water_ml != null ? fmtInt(start.brew!.water_ml) : '–'} mL · grind{' '}
+              {grindLabel(start.brew!, s.grind_scales) ?? '–'}
+            </>
             {last?.next_time && (
               <div className="start-next">
                 <span>Next time:</span> {last.next_time}
@@ -556,7 +534,7 @@ export function BrewSheet({
                 disabled={!steps || !f.grinder || (grindN != null && grindN <= steps.min)}
                 onClick={() => nudgeGrind(-1)}
               >
-                −
+                <Icon name="minus" size={18} />
               </button>
               <input
                 className="in"
@@ -577,7 +555,7 @@ export function BrewSheet({
                 disabled={!steps || !f.grinder || (grindN != null && grindN >= steps.max)}
                 onClick={() => nudgeGrind(1)}
               >
-                +
+                <Icon name="plus" size={18} />
               </button>
             </div>
           )}

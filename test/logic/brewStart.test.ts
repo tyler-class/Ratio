@@ -12,23 +12,20 @@ const bean = (id: string, status: string, brews: BrewView[]) => {
 };
 
 describe('where a new brew starts', () => {
-  it('picks the one bag being drunk, the most recently brewed of several, or none', () => {
+  it('picks the bag only when exactly one is being drunk', () => {
     const a = bean('a', 'drinking', [brew('a1', 7, 10)]);
     const b = bean('b', 'drinking', [brew('b1', 7, 15)]);
     const c = bean('c', 'resting', []);
     expect(defaultBean({ beans: [a, c] })?.id).toBe('a');
-    expect(defaultBean({ beans: [a, b, c] })?.id).toBe('b');
+    expect(defaultBean({ beans: [a, b, c] })).toBeNull();
     expect(defaultBean({ beans: [c] })).toBeNull();
   });
 
-  it('starts from the best brew once one worked (7+), else the last; a fresh bag borrows', () => {
+  it('starts from the best brew once one worked (7+), else the last, else nothing', () => {
     const good = bean('g', 'drinking', [brew('g2', 5, 12), brew('g1', 8, 10)]);
-    expect(startFor(good, { brews: [] })).toMatchObject({ why: 'best', brew: { id: 'g1' } });
+    expect(startFor(good)).toMatchObject({ why: 'best', brew: { id: 'g1' } });
     const dialing = bean('d', 'drinking', [brew('d2', 6, 12), brew('d1', 5, 10)]);
-    expect(startFor(dialing, { brews: [] })).toMatchObject({ why: 'last', brew: { id: 'd2' } });
-    const fresh = bean('f', 'drinking', []);
-    const all = [brew('x2', 6, 14, 'V60'), brew('x1', 9, 9, 'V60'), brew('y1', 10, 8, 'AeroPress')];
-    // Method from your last brew (V60), the best-rated V60 brew anywhere for the recipe.
-    expect(startFor(fresh, { brews: all })).toMatchObject({ why: 'fresh', brew: { id: 'x1' } });
+    expect(startFor(dialing)).toMatchObject({ why: 'last', brew: { id: 'd2' } });
+    expect(startFor(bean('f', 'drinking', []))).toEqual({ why: 'fresh', brew: null });
   });
 });
